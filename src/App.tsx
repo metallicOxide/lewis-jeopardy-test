@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { Plus, Minus, Trash2 } from 'lucide-react';
+import { STATE_KEY, useLocalState } from './controller';
 
 const JeopardyGame = () => {
-  const [gameState, setGameState] = useState('start'); // 'start', 'config', 'board', 'question'
+  const [gameState, setGameState] = useLocalState(STATE_KEY.GAME_MODE)('start'); // 'start', 'config', 'board', 'question'
 
   const [numTeams, setNumTeams] = useState(8);
-  const [categories, setCategories] = useState([
+  const [categories, setCategories] = useLocalState(STATE_KEY.CATEGORY)([
     'Category 1'
   ]);
 
   const [pointValues] = useState([100, 200, 300, 400, 500]);
 
-  const [questions, setQuestions] = useState(
+  const [questions, setQuestions] = useLocalState(STATE_KEY.QUESTIONS)(
     Array(1).fill(null).map((_, catIndex) =>
       Array(5).fill(null).map((_, qIndex) => ({
         question: `Question for Category ${catIndex + 1} - ${pointValues[qIndex]}`,
@@ -21,7 +22,7 @@ const JeopardyGame = () => {
     )
   );
 
-  const [teams, setTeams] = useState(
+  const [teams, setTeams] = useLocalState(STATE_KEY.TEAMS)(
     Array(8).fill(null).map((_, i) => ({
       name: `Team ${i + 1}`,
       score: 0
@@ -52,13 +53,30 @@ const JeopardyGame = () => {
     }
   };
 
-  const updateTeamScore = (teamIndex, change) => {
-    if (selectedTile) {
-      const newTeams = [...teams];
-      const points = pointValues[selectedTile.qIndex];
-      newTeams[teamIndex].score += change * points;
-      setTeams(newTeams);
+  const resetGame = () => {
+    setGameState('start')
+    // nuke points on teams
+    if (questions) {
+      questions.forEach(qSet => qSet.forEach(question => question.revealed = false));
+      setQuestions(questions);
     }
+    // nuke revealed state
+    if (teams) {
+      setTeams(teams.map(old => ({
+        ...old,
+        score: 0
+      })));
+    }
+  }
+
+  const updateTeamScore = (teamIndex, change, defaultPoints = 100) => {
+    const newTeams = [...teams];
+    let points = defaultPoints
+    if (selectedTile) {
+      points = pointValues[selectedTile.qIndex];
+    }
+    newTeams[teamIndex].score += change * points;
+    setTeams(newTeams);
   };
 
   const updateTeamScoreDirect = (teamIndex, value) => {
@@ -206,16 +224,16 @@ const JeopardyGame = () => {
             <h1 className="text-4xl font-bold text-white">Configure Game</h1>
             <div className="flex gap-4">
               <button
-                onClick={() => setGameState('start')}
-                className="bg-gray-600 text-white px-6 py-3 rounded font-bold hover:bg-gray-500"
+                onClick={() => resetGame()}
+                className="bg-red-600 text-white px-6 py-3 rounded font-bold hover:bg-red-500"
               >
-                Back to Setup
+                Reset game
               </button>
               <button
                 onClick={startGame}
                 className="bg-green-600 text-white px-6 py-3 rounded font-bold hover:bg-green-500"
               >
-                Start Game
+                Start or Resume Game
               </button>
             </div>
           </div>
@@ -225,7 +243,7 @@ const JeopardyGame = () => {
               <h2 className="text-2xl font-bold text-white">Categories ({categories.length})</h2>
               <button
                 onClick={addCategory}
-                className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-500 flex items-center gap-2"
+                className="bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-500 flex items-center gap-2"
               >
                 <Plus size={20} /> Add Category
               </button>
@@ -243,7 +261,7 @@ const JeopardyGame = () => {
                   {categories.length > 1 && (
                     <button
                       onClick={() => removeCategory(i)}
-                      className="bg-red-600 text-white px-3 rounded hover:bg-red-500"
+                      className="bg-gray-600 text-white px-3 rounded hover:bg-gray-500"
                     >
                       <Trash2 size={20} />
                     </button>
@@ -324,7 +342,7 @@ const JeopardyGame = () => {
             {teams.slice(0, numTeams).map((team, i) => (
               <div key={i} className="text-center">
                 <div className="bg-white px-4 py-2 rounded mb-2">
-                  <p className="font-bold">{team.name}</p>
+                  <p className="font-bold text-2xl">{team.name}</p>
                   <input
                     type="number"
                     value={team.score}
@@ -397,11 +415,32 @@ const JeopardyGame = () => {
         </div>
 
         <div className="bg-blue-950 p-6 rounded-lg">
-          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${numTeams}, minmax(0, 1fr))` }}>
+          <div className="grid gap-4 max-w-7xl mx-auto" style={{ gridTemplateColumns: `repeat(${numTeams}, minmax(0, 1fr))` }}>
             {teams.slice(0, numTeams).map((team, i) => (
-              <div key={i} className="bg-white p-4 rounded text-center">
-                <p className="font-bold text-lg">{team.name}</p>
-                <p className="text-3xl text-blue-900 font-bold">{team.score}</p>
+              <div key={i} className="text-center">
+                <div className="bg-white px-4 py-2 rounded mb-2">
+                  <p className="font-bold text-2xl">{team.name}</p>
+                  <input
+                    type="number"
+                    value={team.score}
+                    onChange={(e) => updateTeamScoreDirect(i, e.target.value)}
+                    className="text-2xl text-blue-900 font-bold w-full text-center border-2 border-blue-200 rounded px-2"
+                  />
+                </div>
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={() => updateTeamScore(i, 1)}
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500"
+                  >
+                    <Plus size={20} />
+                  </button>
+                  <button
+                    onClick={() => updateTeamScore(i, -1)}
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-500"
+                  >
+                    <Minus size={20} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

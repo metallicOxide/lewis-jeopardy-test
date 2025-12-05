@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Plus, Minus, Trash2 } from 'lucide-react';
+import { Plus, Minus, Trash2 } from 'lucide-react';
 
 const JeopardyGame = () => {
   const [gameState, setGameState] = useState('start'); // 'start', 'config', 'board', 'question'

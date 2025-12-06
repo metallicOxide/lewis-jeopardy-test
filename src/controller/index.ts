@@ -3,7 +3,7 @@ import { useState } from 'react';
 const GAME_STATE = "JEOPARDY_GAME_STATE";
 
 export const STATE_KEY = {
-    GAME_MODE: 'gameMode',
+    GAME_STATUS: 'gameStatus',
     CATEGORY: 'category',
     QUESTIONS: 'questions',
     TEAMS: 'teams',

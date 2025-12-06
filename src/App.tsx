@@ -1,38 +1,40 @@
 import React, { useState } from 'react';
 import { Plus, Minus, Trash2 } from 'lucide-react';
-import { STATE_KEY, useLocalState } from './controller';
+import type {
+  Category,
+  GameStatus,
+  Team,
+} from './types'
+import {useLocalState, STATE_KEY} from './controller'
 
 const JeopardyGame = () => {
-  const [gameState, setGameState] = useLocalState(STATE_KEY.GAME_MODE)('start'); // 'start', 'config', 'board', 'question'
+  const pointValues = [100, 200, 300, 400, 500];
 
+  const [gameState, setGameState] = useLocalState(STATE_KEY.GAME_STATUS)<GameStatus>('start');
   const [numTeams, setNumTeams] = useState(8);
-  const [categories, setCategories] = useLocalState(STATE_KEY.CATEGORY)([
-    'Category 1'
-  ]);
 
-  const [pointValues] = useState([100, 200, 300, 400, 500]);
-
-  const [questions, setQuestions] = useLocalState(STATE_KEY.QUESTIONS)(
-    Array(1).fill(null).map((_, catIndex) =>
-      Array(5).fill(null).map((_, qIndex) => ({
-        question: `Question for Category ${catIndex + 1} - ${pointValues[qIndex]}`,
-        answer: `Answer for Category ${catIndex + 1} - ${pointValues[qIndex]}`,
+  const [categories, setCategories] = useLocalState(STATE_KEY.CATEGORY)<Category[]>([
+    {
+      name: 'Category 1',
+      questions: pointValues.map(points => ({
+        question: `Question for Category 1 - ${points}`,
+        answer: `Answer for Category 1 - ${points}`,
         revealed: false
       }))
-    )
-  );
+    }
+  ]);
 
-  const [teams, setTeams] = useLocalState(STATE_KEY.TEAMS)(
+  const [teams, setTeams] = useLocalState(STATE_KEY.TEAMS)<Team[]>(
     Array(8).fill(null).map((_, i) => ({
       name: `Team ${i + 1}`,
       score: 0
     }))
   );
 
-  const [selectedTile, setSelectedTile] = useState(null);
+  const [selectedTile, setSelectedTile] = useState<{ catIndex: number, qIndex: number } | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
 
-  const handleTileClick = (catIndex, qIndex) => {
+  const handleTileClick = (catIndex: number, qIndex: number) => {
     setSelectedTile({ catIndex, qIndex });
     setShowAnswer(false);
     setGameState('question');
@@ -47,31 +49,27 @@ const JeopardyGame = () => {
   const handleRevealAnswer = () => {
     if (selectedTile) {
       setShowAnswer(true);
-      const newQuestions = [...questions];
-      newQuestions[selectedTile.catIndex][selectedTile.qIndex].revealed = true;
-      setQuestions(newQuestions);
+      const newCategories = [...categories];
+      newCategories[selectedTile.catIndex].questions[selectedTile.qIndex].revealed = true;
+      setCategories(newCategories);
     }
   };
 
   const resetGame = () => {
-    setGameState('start')
-    // nuke points on teams
-    if (questions) {
-      questions.forEach(qSet => qSet.forEach(question => question.revealed = false));
-      setQuestions(questions);
-    }
-    // nuke revealed state
-    if (teams) {
-      setTeams(teams.map(old => ({
-        ...old,
-        score: 0
-      })));
-    }
-  }
+    setGameState('start');
+    const newCategories = categories.map(cat => ({
+      ...cat,
+      questions: cat.questions.map(q => ({ ...q, revealed: false }))
+    }));
+    setCategories(newCategories);
 
-  const updateTeamScore = (teamIndex, change, defaultPoints = 100) => {
+    const newTeams = teams.map(team => ({ ...team, score: 0 }));
+    setTeams(newTeams);
+  };
+
+  const updateTeamScore = (teamIndex: number, change: number) => {
     const newTeams = [...teams];
-    let points = defaultPoints
+    let points = 100;
     if (selectedTile) {
       points = pointValues[selectedTile.qIndex];
     }
@@ -79,56 +77,50 @@ const JeopardyGame = () => {
     setTeams(newTeams);
   };
 
-  const updateTeamScoreDirect = (teamIndex, value) => {
+  const updateTeamScoreDirect = (teamIndex: number, value: string) => {
     const newTeams = [...teams];
-    newTeams[teamIndex].score = parseInt(value);
+    newTeams[teamIndex].score = parseInt(value) || 0;
     setTeams(newTeams);
   };
 
-  const updateCategoryName = (index, name) => {
+  const updateCategoryName = (index: number, name: string) => {
     const newCategories = [...categories];
-    newCategories[index] = name;
+    newCategories[index].name = name;
     setCategories(newCategories);
   };
 
   const addCategory = () => {
-    const newCategories = [...categories, `Category ${categories.length + 1}`];
-    setCategories(newCategories); ``
-
-    const newQuestions = [...questions];
-    newQuestions.push(
-      Array(5).fill(null).map((_, qIndex) => ({
-        question: `Question for Category ${newCategories.length} - ${pointValues[qIndex]}`,
-        answer: `Answer for Category ${newCategories.length} - ${pointValues[qIndex]}`,
+    const newCategory: Category = {
+      name: `Category ${categories.length + 1}`,
+      questions: pointValues.map(points => ({
+        question: `Question for Category ${categories.length + 1} - ${points}`,
+        answer: `Answer for Category ${categories.length + 1} - ${points}`,
         revealed: false
       }))
-    );
-    setQuestions(newQuestions);
+    };
+    setCategories([...categories, newCategory]);
   };
 
-  const removeCategory = (index) => {
+  const removeCategory = (index: number) => {
     if (categories.length > 1) {
       const newCategories = categories.filter((_, i) => i !== index);
       setCategories(newCategories);
-
-      const newQuestions = questions.filter((_, i) => i !== index);
-      setQuestions(newQuestions);
     }
   };
 
-  const updateQuestion = (catIndex, qIndex, field, value) => {
-    const newQuestions = [...questions];
-    newQuestions[catIndex][qIndex][field] = value;
-    setQuestions(newQuestions);
+  const updateQuestion = (catIndex: number, qIndex: number, field: 'question' | 'answer', value: string) => {
+    const newCategories = [...categories];
+    newCategories[catIndex].questions[qIndex][field] = value;
+    setCategories(newCategories);
   };
 
-  const updateTeamName = (index, name) => {
+  const updateTeamName = (index: number, name: string) => {
     const newTeams = [...teams];
     newTeams[index].name = name;
     setTeams(newTeams);
   };
 
-  const handleNumTeamsChange = (num) => {
+  const handleNumTeamsChange = (num: number) => {
     const newNum = Math.max(1, Math.min(8, num));
     setNumTeams(newNum);
 
@@ -146,7 +138,7 @@ const JeopardyGame = () => {
   };
 
   React.useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState === 'question' && selectedTile) {
         if (e.key === 'Escape') {
           handleBack();
@@ -224,7 +216,7 @@ const JeopardyGame = () => {
             <h1 className="text-4xl font-bold text-white">Configure Game</h1>
             <div className="flex gap-4">
               <button
-                onClick={() => resetGame()}
+                onClick={resetGame}
                 className="bg-red-600 text-white px-6 py-3 rounded font-bold hover:bg-red-500"
               >
                 Reset game
@@ -253,7 +245,7 @@ const JeopardyGame = () => {
                 <div key={i} className="flex gap-2">
                   <input
                     type="text"
-                    value={cat}
+                    value={cat.name}
                     onChange={(e) => updateCategoryName(i, e.target.value)}
                     className="flex-1 p-3 rounded bg-blue-700 text-white border-2 border-blue-600"
                     placeholder={`Category ${i + 1}`}
@@ -275,20 +267,20 @@ const JeopardyGame = () => {
             <h2 className="text-2xl font-bold text-white mb-4">Questions & Answers</h2>
             {categories.map((cat, catIndex) => (
               <div key={catIndex} className="mb-6">
-                <h3 className="text-xl font-bold text-yellow-400 mb-3">{cat}</h3>
-                {pointValues.map((points, qIndex) => (
+                <h3 className="text-xl font-bold text-yellow-400 mb-3">{cat.name}</h3>
+                {cat.questions.map((question, qIndex) => (
                   <div key={qIndex} className="mb-4 bg-blue-700 p-4 rounded">
-                    <p className="text-white font-bold mb-2">{points} Points</p>
+                    <p className="text-white font-bold mb-2">{pointValues[qIndex]} Points</p>
                     <input
                       type="text"
-                      value={questions[catIndex][qIndex].question}
+                      value={question.question}
                       onChange={(e) => updateQuestion(catIndex, qIndex, 'question', e.target.value)}
                       className="w-full p-2 mb-2 rounded bg-blue-600 text-white border border-blue-500"
                       placeholder="Question"
                     />
                     <input
                       type="text"
-                      value={questions[catIndex][qIndex].answer}
+                      value={question.answer}
                       onChange={(e) => updateQuestion(catIndex, qIndex, 'answer', e.target.value)}
                       className="w-full p-2 rounded bg-blue-600 text-white border border-blue-500"
                       placeholder="Answer"
@@ -306,7 +298,8 @@ const JeopardyGame = () => {
   // Question Screen
   if (gameState === 'question' && selectedTile !== null) {
     const { catIndex, qIndex } = selectedTile;
-    const tile = questions[catIndex][qIndex];
+    const category = categories[catIndex];
+    const question = category.questions[qIndex];
 
     return (
       <div className="min-h-screen bg-blue-900 flex flex-col">
@@ -318,7 +311,7 @@ const JeopardyGame = () => {
             Continue <span className="ml-2 px-3 py-1 bg-gray-700 rounded">ESC</span>
           </button>
           <h2 className="text-white text-2xl font-bold">
-            {categories[catIndex]} for {pointValues[qIndex]}
+            {category.name} for {pointValues[qIndex]}
           </h2>
           <button
             onClick={handleRevealAnswer}
@@ -330,9 +323,9 @@ const JeopardyGame = () => {
 
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center">
-            <p className="text-white text-6xl mb-8">{tile.question}</p>
+            <p className="text-white text-6xl mb-8">{question.question}</p>
             {showAnswer && (
-              <p className="text-yellow-400 text-5xl mt-8 animate-fadeIn">{tile.answer}</p>
+              <p className="text-yellow-400 text-5xl mt-8 animate-fadeIn">{question.answer}</p>
             )}
           </div>
         </div>
@@ -389,7 +382,7 @@ const JeopardyGame = () => {
         <div className="grid gap-2 mb-8" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
           {categories.map((cat, i) => (
             <div key={i} className="bg-blue-700 p-4 text-center">
-              <p className="text-white font-bold text-sm uppercase">{cat}</p>
+              <p className="text-white font-bold text-sm uppercase">{cat.name}</p>
             </div>
           ))}
         </div>
@@ -397,19 +390,16 @@ const JeopardyGame = () => {
         <div className="grid gap-2 mb-8" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
           {categories.map((cat, catIndex) => (
             <div key={catIndex} className="flex flex-col gap-2">
-              {pointValues.map((points, qIndex) => {
-                const tile = questions[catIndex][qIndex];
-                return (
-                  <button
-                    key={qIndex}
-                    onClick={() => handleTileClick(catIndex, qIndex)}
-                    className={`${tile.revealed ? 'bg-blue-950' : 'bg-blue-600 hover:bg-blue-500'
-                      } p-8 rounded text-yellow-400 text-3xl font-bold transition-colors`}
-                  >
-                    {points}
-                  </button>
-                );
-              })}
+              {cat.questions.map((question, qIndex) => (
+                <button
+                  key={qIndex}
+                  onClick={() => handleTileClick(catIndex, qIndex)}
+                  className={`${question.revealed ? 'bg-blue-950' : 'bg-blue-600 hover:bg-blue-500'
+                    } p-8 rounded text-yellow-400 text-3xl font-bold transition-colors`}
+                >
+                  {pointValues[qIndex]}
+                </button>
+              ))}
             </div>
           ))}
         </div>

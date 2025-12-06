@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Plus, Minus, Trash2 } from 'lucide-react';
+import { Plus, Minus, Trash2, Upload } from 'lucide-react';
 import type {
   Category,
   GameStatus,
   Team,
 } from './types'
-import {useLocalState, STATE_KEY} from './controller'
+import { useLocalState, STATE_KEY } from './controller'
+import { importQuestionsFromCSV } from './importer';
 
 const JeopardyGame = () => {
   const pointValues = [100, 200, 300, 400, 500];
@@ -137,6 +138,19 @@ const JeopardyGame = () => {
     setGameState('board');
   };
 
+  const handleCSVUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const importedCategories = await importQuestionsFromCSV(file, pointValues);
+      setCategories(importedCategories);
+    } catch (error) {
+      console.error('Error importing CSV:', error);
+      alert(`Error importing CSV: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState === 'question' && selectedTile) {
@@ -233,12 +247,23 @@ const JeopardyGame = () => {
           <div className="bg-blue-800 p-6 rounded-lg mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-white">Categories ({categories.length})</h2>
-              <button
-                onClick={addCategory}
-                className="bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-500 flex items-center gap-2"
-              >
-                <Plus size={20} /> Add Category
-              </button>
+              <div className="flex gap-2">
+                <label className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-500 flex items-center gap-2 cursor-pointer">
+                  <Upload size={20} /> Upload CSV
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCSVUpload}
+                    className="hidden"
+                  />
+                </label>
+                <button
+                  onClick={addCategory}
+                  className="bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-500 flex items-center gap-2"
+                >
+                  <Plus size={20} /> Add Category
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               {categories.map((cat, i) => (

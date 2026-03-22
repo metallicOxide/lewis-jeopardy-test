@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { GameState } from '../types';
 
-const GAME_STATE = "JEOPARDY_GAME_STATE";
+export const STORAGE_KEY = "JEOPARDY_GAME_STATE";
 
 const saveState = (gameState: GameState) => {
-    window.localStorage.setItem(GAME_STATE, JSON.stringify(gameState))
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState))
 }
 
 const getState = (): GameState => {
-    const stateString = window.localStorage.getItem(GAME_STATE);
+    const stateString = window.localStorage.getItem(STORAGE_KEY);
     if (!stateString) return {}
     return JSON.parse(stateString)
 }

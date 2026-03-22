@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Category, GameStatus, Team } from "../types";
+import { createPlaceholderQuestion } from "../utils";
 
 const POINT_VALUES = [100, 200, 300, 400, 500];
 
@@ -28,11 +29,9 @@ export const useGameStore = create<JeopardyStore>()(
       categories: [
         {
           name: "Category 1",
-          questions: POINT_VALUES.map((points) => ({
-            question: `Question for Category 1 - ${points}`,
-            answer: `Answer for Category 1 - ${points}`,
-            revealed: false,
-          })),
+          questions: POINT_VALUES.map((points) =>
+            createPlaceholderQuestion("Category 1", points),
+          ),
         },
       ],
       teams: Array(2)
@@ -59,11 +58,11 @@ export const useGameStore = create<JeopardyStore>()(
                 ...cat,
                 questions: [
                   ...cat.questions,
-                  ...pointValues.slice(currentLen).map((points) => ({
-                    question: `Question for ${cat.name} - ${points}`,
-                    answer: `Answer for ${cat.name} - ${points}`,
-                    revealed: false,
-                  })),
+                  ...pointValues
+                    .slice(currentLen)
+                    .map((points) =>
+                      createPlaceholderQuestion(cat.name, points),
+                    ),
                 ],
               };
             } else if (newLen < currentLen) {

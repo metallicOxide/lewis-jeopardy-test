@@ -3,6 +3,7 @@ import { Minus, Plus, Trash2, Upload } from "lucide-react";
 import type { Category } from "../types";
 import { importQuestionsFromCSV } from "../importer";
 import { useGameStore } from "../controller";
+import { createPlaceholderQuestion } from "../utils";
 
 const ConfigScreen = () => {
   const categories = useGameStore((s) => s.categories);
@@ -38,11 +39,12 @@ const ConfigScreen = () => {
   const addCategory = () => {
     const newCategory: Category = {
       name: `Category ${categories.length + 1}`,
-      questions: pointValues.map((points) => ({
-        question: `Question for Category ${categories.length + 1} - ${points}`,
-        answer: `Answer for Category ${categories.length + 1} - ${points}`,
-        revealed: false,
-      })),
+      questions: pointValues.map((points) =>
+        createPlaceholderQuestion(
+          `Category ${categories.length + 1}`,
+          points,
+        ),
+      ),
     };
     setCategories([...categories, newCategory]);
   };

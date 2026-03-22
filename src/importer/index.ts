@@ -1,6 +1,7 @@
 import Papa from "papaparse";
 
 import { Question, Category } from "../types";
+import { createPlaceholderQuestion } from "../utils";
 
 interface CSVRow {
   Category: string;
@@ -108,13 +109,7 @@ export const importQuestionsFromCSV = (
           ).map(([categoryName, rows]) => {
             const questions: Question[] = pointValues.map((pv) => {
               const match = rows.find((r) => r.points === pv);
-              return (
-                match?.question || {
-                  question: `Question for ${categoryName} - ${pv}`,
-                  answer: `Answer for ${categoryName} - ${pv}`,
-                  revealed: false,
-                }
-              );
+              return match?.question || createPlaceholderQuestion(categoryName, pv);
             });
 
             return {

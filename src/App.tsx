@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { Plus, Minus, Trash2, Upload } from 'lucide-react';
-import type {
-  Category,
-  GameStatus,
-  Team,
+import {
+  STATE_KEY,
+  type Category,
+  type GameStatus,
+  type Team,
 } from './types'
-import { useLocalState, STATE_KEY } from './controller'
+import { useLocalState } from './controller'
 import { importQuestionsFromCSV } from './importer';
 
 const JeopardyGame = () => {
   const pointValues = [100, 200, 300, 400, 500];
-
   const [gameState, setGameState] = useLocalState(STATE_KEY.GAME_STATUS)<GameStatus>('start');
   const [numTeams, setNumTeams] = useState(8);
-
   const [categories, setCategories] = useLocalState(STATE_KEY.CATEGORY)<Category[]>([
     {
       name: 'Category 1',

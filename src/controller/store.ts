@@ -53,25 +53,28 @@ export const useGameStore = create<JeopardyStore>()(
           categories: state.categories.map((cat) => {
             const currentLen = cat.questions.length;
             const newLen = pointValues.length;
-            if (newLen > currentLen) {
-              return {
-                ...cat,
-                questions: [
-                  ...cat.questions,
-                  ...pointValues
-                    .slice(currentLen)
-                    .map((points) =>
-                      createPlaceholderQuestion(cat.name, points),
-                    ),
-                ],
-              };
-            } else if (newLen < currentLen) {
-              return {
-                ...cat,
-                questions: cat.questions.slice(0, newLen),
-              };
+
+            switch (true) {
+              case newLen > currentLen:
+                return {
+                  ...cat,
+                  questions: [
+                    ...cat.questions,
+                    ...pointValues
+                      .slice(currentLen)
+                      .map((points) =>
+                        createPlaceholderQuestion(cat.name, points),
+                      ),
+                  ],
+                };
+              case newLen < currentLen:
+                return {
+                  ...cat,
+                  questions: cat.questions.slice(0, newLen),
+                };
+              default:
+                return cat;
             }
-            return cat;
           }),
         })),
       resetGame: () =>

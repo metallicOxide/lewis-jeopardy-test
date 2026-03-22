@@ -17,6 +17,7 @@ type JeopardyStore = {
   setCategories: (categories: Category[]) => void;
   setTeams: (teams: Team[]) => void;
   setSelectedTile: (tile: { catIndex: number; qIndex: number } | null) => void;
+  setPointValues: (pointValues: number[]) => void;
   resetGame: () => void;
 };
 
@@ -47,6 +48,33 @@ export const useGameStore = create<JeopardyStore>()(
       setCategories: (categories) => set({ categories }),
       setTeams: (teams) => set({ teams }),
       setSelectedTile: (selectedTile) => set({ selectedTile }),
+      setPointValues: (pointValues) =>
+        set((state) => ({
+          pointValues,
+          categories: state.categories.map((cat) => {
+            const currentLen = cat.questions.length;
+            const newLen = pointValues.length;
+            if (newLen > currentLen) {
+              return {
+                ...cat,
+                questions: [
+                  ...cat.questions,
+                  ...pointValues.slice(currentLen).map((points) => ({
+                    question: `Question for ${cat.name} - ${points}`,
+                    answer: `Answer for ${cat.name} - ${points}`,
+                    revealed: false,
+                  })),
+                ],
+              };
+            } else if (newLen < currentLen) {
+              return {
+                ...cat,
+                questions: cat.questions.slice(0, newLen),
+              };
+            }
+            return cat;
+          }),
+        })),
       resetGame: () =>
         set((state) => ({
           gameState: "start",
@@ -63,6 +91,7 @@ export const useGameStore = create<JeopardyStore>()(
         gameState: state.gameState,
         categories: state.categories,
         teams: state.teams,
+        pointValues: state.pointValues,
       }),
     },
   ),

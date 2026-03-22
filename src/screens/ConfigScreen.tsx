@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Minus, Plus, Trash2, Upload } from "lucide-react";
 import type { Category } from "../types";
 import { importQuestionsFromCSV } from "../importer";
 import { useGameStore } from "../controller";
@@ -9,7 +9,25 @@ const ConfigScreen = () => {
   const setCategories = useGameStore((s) => s.setCategories);
   const setGameState = useGameStore((s) => s.setGameState);
   const pointValues = useGameStore((s) => s.pointValues);
+  const setPointValues = useGameStore((s) => s.setPointValues);
   const resetGame = useGameStore((s) => s.resetGame);
+
+  const updatePointValue = (index: number, value: number) => {
+    const newPointValues = [...pointValues];
+    newPointValues[index] = value;
+    setPointValues(newPointValues);
+  };
+
+  const addPointValue = () => {
+    const lastValue = pointValues[pointValues.length - 1] || 0;
+    setPointValues([...pointValues, lastValue + 100]);
+  };
+
+  const removePointValue = (index: number) => {
+    if (pointValues.length > 1) {
+      setPointValues(pointValues.filter((_, i) => i !== index));
+    }
+  };
 
   const updateCategoryName = (index: number, name: string) => {
     const newCategories = [...categories];
@@ -54,11 +72,9 @@ const ConfigScreen = () => {
     if (!file) return;
 
     try {
-      const importedCategories = await importQuestionsFromCSV(
-        file,
-        pointValues,
-      );
-      setCategories(importedCategories);
+      const result = await importQuestionsFromCSV(file);
+      setPointValues(result.pointValues);
+      setCategories(result.categories);
     } catch (error) {
       console.error("Error importing CSV:", error);
       alert(
@@ -73,6 +89,15 @@ const ConfigScreen = () => {
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-4xl font-bold text-white">Configure Game</h1>
           <div className="flex gap-4">
+            <label className="flex cursor-pointer items-center gap-2 rounded bg-orange-600 px-6 py-3 font-bold text-white hover:bg-orange-500">
+              <Upload size={20} /> Upload CSV
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleCSVUpload}
+                className="hidden"
+              />
+            </label>
             <button
               onClick={resetGame}
               className="rounded bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-500"
@@ -91,25 +116,50 @@ const ConfigScreen = () => {
         <div className="mb-8 rounded-lg bg-blue-800 p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">
+              Point Values ({pointValues.length} rows)
+            </h2>
+            <button
+              onClick={addPointValue}
+              className="flex items-center gap-2 rounded bg-purple-600 px-4 py-2 font-bold text-white hover:bg-purple-500"
+            >
+              <Plus size={20} /> Add Row
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+            {pointValues.map((value, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) =>
+                    updatePointValue(i, parseInt(e.target.value) || 0)
+                  }
+                  className="w-full rounded border-2 border-blue-600 bg-blue-700 p-3 text-white"
+                />
+                {pointValues.length > 1 && (
+                  <button
+                    onClick={() => removePointValue(i)}
+                    className="rounded bg-gray-600 px-3 text-white hover:bg-gray-500"
+                  >
+                    <Minus size={20} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-8 rounded-lg bg-blue-800 p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white">
               Categories ({categories.length})
             </h2>
-            <div className="flex gap-2">
-              <label className="flex cursor-pointer items-center gap-2 rounded bg-orange-600 px-4 py-2 font-bold text-white hover:bg-orange-500">
-                <Upload size={20} /> Upload CSV
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleCSVUpload}
-                  className="hidden"
-                />
-              </label>
-              <button
-                onClick={addCategory}
-                className="flex items-center gap-2 rounded bg-purple-600 px-4 py-2 font-bold text-white hover:bg-purple-500"
-              >
-                <Plus size={20} /> Add Category
-              </button>
-            </div>
+            <button
+              onClick={addCategory}
+              className="flex items-center gap-2 rounded bg-purple-600 px-4 py-2 font-bold text-white hover:bg-purple-500"
+            >
+              <Plus size={20} /> Add Category
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {categories.map((cat, i) => (

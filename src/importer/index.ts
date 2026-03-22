@@ -1,19 +1,17 @@
-// csvImporter.ts
 import Papa from "papaparse";
 
 import { Question, Category } from "../types";
 
 interface CSVRow {
   Category: string;
-  Number: string;
+  Points: string;
   Question: string;
   Answer: string;
 }
 
 export const importQuestionsFromCSV = (
   file: File,
-  pointValues: number[],
-): Promise<Category[]> => {
+): Promise<{ categories: Category[]; pointValues: number[] }> => {
   return new Promise((resolve, reject) => {
     Papa.parse<CSVRow>(file, {
       header: true,
@@ -22,14 +20,12 @@ export const importQuestionsFromCSV = (
       transformHeader: (header) => header.trim(),
       complete: (results) => {
         try {
-          // Validate data
           if (!results.data || results.data.length === 0) {
             reject(new Error("CSV file is empty"));
             return;
           }
 
-          // Check for required columns
-          const requiredColumns = ["Category", "Number", "Question", "Answer"];
+          const requiredColumns = ["Category", "Points", "Question", "Answer"];
           const headers = results.meta.fields || [];
           const missingColumns = requiredColumns.filter(
             (col) => !headers.includes(col),
@@ -44,77 +40,90 @@ export const importQuestionsFromCSV = (
             return;
           }
 
-          // Group questions by category
-          const categoryMap = new Map<string, Map<number, Question>>();
+          // Group rows by category, collecting points per row
+          const categoryMap = new Map<
+            string,
+            { points: number; question: Question }[]
+          >();
 
           results.data.forEach((row, index) => {
-            // Validate row data
             if (
               !row.Category ||
               row.Question === undefined ||
-              row.Answer === undefined
+              row.Answer === undefined ||
+              row.Points === undefined
             ) {
               console.warn(`Skipping row ${index + 1}: Missing required data`);
               return;
             }
 
             const categoryName = row.Category.trim();
-            const questionNumber = parseInt(row["Number"]);
+            const points = parseInt(row.Points);
 
-            if (
-              isNaN(questionNumber) ||
-              questionNumber < 0 ||
-              questionNumber >= pointValues.length
-            ) {
+            if (isNaN(points)) {
               console.warn(
-                `Skipping row ${index + 1}: Invalid Number ${row["Number"]}`,
+                `Skipping row ${index + 1}: Invalid Points value "${row.Points}"`,
               );
               return;
             }
 
-            const question: Question = {
-              question: row.Question.trim(),
-              answer: row.Answer.trim(),
-              revealed: false,
-            };
-
-            // Initialize category map if needed
             if (!categoryMap.has(categoryName)) {
-              categoryMap.set(categoryName, new Map());
+              categoryMap.set(categoryName, []);
             }
 
-            // Add question to category
-            categoryMap.get(categoryName)!.set(questionNumber, question);
+            categoryMap.get(categoryName)!.push({
+              points,
+              question: {
+                question: row.Question.trim(),
+                answer: row.Answer.trim(),
+                revealed: false,
+              },
+            });
           });
 
-          // Convert map to Category array
-          const categories: Category[] = Array.from(categoryMap.entries()).map(
-            ([categoryName, questionsMap]) => {
-              // Create questions array with all slots filled
-              const questions: Question[] = pointValues.map((points, index) => {
-                const existingQuestion = questionsMap.get(index);
-                return (
-                  existingQuestion || {
-                    question: `Question for ${categoryName} - ${points}`,
-                    answer: `Answer for ${categoryName} - ${points}`,
-                    revealed: false,
-                  }
-                );
-              });
-
-              return {
-                name: categoryName,
-                questions,
-              };
-            },
-          );
-
-          if (categories.length === 0) {
+          if (categoryMap.size === 0) {
             reject(new Error("No valid categories found in CSV"));
             return;
           }
 
-          resolve(categories);
+          // Find the category with the most rows and derive pointValues from it
+          let maxRows = 0;
+          let maxCategoryPoints: number[] = [];
+
+          categoryMap.forEach((rows) => {
+            const uniquePoints = [
+              ...new Set(rows.map((r) => r.points)),
+            ].sort((a, b) => a - b);
+            if (uniquePoints.length > maxRows) {
+              maxRows = uniquePoints.length;
+              maxCategoryPoints = uniquePoints;
+            }
+          });
+
+          const pointValues = maxCategoryPoints;
+
+          // Build categories using derived pointValues
+          const categories: Category[] = Array.from(
+            categoryMap.entries(),
+          ).map(([categoryName, rows]) => {
+            const questions: Question[] = pointValues.map((pv) => {
+              const match = rows.find((r) => r.points === pv);
+              return (
+                match?.question || {
+                  question: `Question for ${categoryName} - ${pv}`,
+                  answer: `Answer for ${categoryName} - ${pv}`,
+                  revealed: false,
+                }
+              );
+            });
+
+            return {
+              name: categoryName,
+              questions,
+            };
+          });
+
+          resolve({ categories, pointValues });
         } catch (error) {
           reject(
             new Error(

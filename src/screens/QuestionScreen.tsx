@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import type { Category, GameStatus, Team } from '../types';
-import ScoreBar from '../components/ScoreBar';
+import { useState, useEffect } from "react";
+import type { Category, GameStatus, Team } from "../types";
+import ScoreBar from "../components/ScoreBar";
 
 type QuestionScreenProps = {
   categories: Category[];
@@ -34,7 +34,7 @@ const QuestionScreen = ({
   const handleBack = () => {
     setSelectedTile(null);
     setShowAnswer(false);
-    setGameState('board');
+    setGameState("board");
   };
 
   const handleRevealAnswer = () => {
@@ -46,43 +46,47 @@ const QuestionScreen = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         handleBack();
-      } else if (e.key === ' ' || e.key === 'Spacebar') {
+      } else if (e.key === " " || e.key === "Spacebar") {
         e.preventDefault();
         handleRevealAnswer();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedTile]);
 
   return (
-    <div className="min-h-screen bg-blue-900 flex flex-col">
-      <div className="bg-blue-950 p-4 flex justify-between items-center">
+    <div className="flex min-h-screen flex-col bg-blue-900">
+      <div className="flex items-center justify-between bg-blue-950 p-4">
         <button
           onClick={handleBack}
-          className="text-white text-lg hover:text-yellow-400"
+          className="text-lg text-white hover:text-yellow-400"
         >
-          Continue <span className="ml-2 px-3 py-1 bg-gray-700 rounded">ESC</span>
+          Continue{" "}
+          <span className="ml-2 rounded bg-gray-700 px-3 py-1">ESC</span>
         </button>
-        <h2 className="text-white text-2xl font-bold">
+        <h2 className="text-2xl font-bold text-white">
           {category.name} for {pointValues[qIndex]}
         </h2>
         <button
           onClick={handleRevealAnswer}
-          className="text-white text-lg hover:text-yellow-400"
+          className="text-lg text-white hover:text-yellow-400"
         >
-          Reveal Correct Response <span className="ml-2 px-3 py-1 bg-gray-700 rounded">Spacebar</span>
+          Reveal Correct Response{" "}
+          <span className="ml-2 rounded bg-gray-700 px-3 py-1">Spacebar</span>
         </button>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex flex-1 items-center justify-center p-8">
         <div className="text-center">
-          <p className="text-white text-6xl mb-8">{question.question}</p>
+          <p className="mb-8 text-6xl text-white">{question.question}</p>
           {showAnswer && (
-            <p className="text-yellow-400 text-5xl mt-8 animate-fadeIn">{question.answer}</p>
+            <p className="animate-fadeIn mt-8 text-5xl text-yellow-400">
+              {question.answer}
+            </p>
           )}
         </div>
       </div>

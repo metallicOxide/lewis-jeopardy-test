@@ -1,11 +1,20 @@
 import ScoreBar from "../components/ScoreBar";
 import { useGameStore } from "../controller";
 
+const getCellStyles = (rowCount: number) => {
+  if (rowCount <= 5) return { padding: "p-8", fontSize: "text-3xl" };
+  if (rowCount <= 8) return { padding: "p-4", fontSize: "text-2xl" };
+  if (rowCount <= 12) return { padding: "p-2", fontSize: "text-xl" };
+  return { padding: "p-1", fontSize: "text-lg" };
+};
+
 const BoardScreen = () => {
   const categories = useGameStore((s) => s.categories);
   const pointValues = useGameStore((s) => s.pointValues);
   const setSelectedTile = useGameStore((s) => s.setSelectedTile);
   const setGameState = useGameStore((s) => s.setGameState);
+
+  const cellStyles = getCellStyles(pointValues.length);
 
   const handleTileClick = (catIndex: number, qIndex: number) => {
     setSelectedTile({ catIndex, qIndex });
@@ -32,9 +41,7 @@ const BoardScreen = () => {
       >
         {categories.map((cat, i) => (
           <div key={i} className="bg-blue-700 p-4 text-center">
-            <p className="text-sm font-bold text-white uppercase">
-              {cat.name}
-            </p>
+            <p className="text-sm font-bold text-white uppercase">{cat.name}</p>
           </div>
         ))}
       </div>
@@ -55,7 +62,7 @@ const BoardScreen = () => {
                   question.revealed
                     ? "bg-blue-950"
                     : "bg-blue-600 hover:bg-blue-500"
-                } flex-1 rounded p-8 text-3xl font-bold text-yellow-400 transition-colors`}
+                } flex-1 rounded ${cellStyles.padding} ${cellStyles.fontSize} font-bold text-yellow-400 transition-colors`}
               >
                 {pointValues[qIndex]}
               </button>
@@ -64,10 +71,7 @@ const BoardScreen = () => {
         ))}
       </div>
 
-      <ScoreBar
-        pointIncrement={pointValues[0]}
-        className="rounded-lg p-6"
-      />
+      <ScoreBar pointIncrement={pointValues[0]} className="rounded-lg p-6" />
     </div>
   );
 };

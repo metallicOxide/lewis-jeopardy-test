@@ -247,7 +247,7 @@ const JeopardyGame = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-white">Categories ({categories.length})</h2>
               <div className="flex gap-2">
-                <label className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-500 flex items-center gap-2 cursor-pointer">
+                <label className="bg-orange-600 text-white px-4 py-2 rounded font-bold hover:bg-orange-500 flex items-center gap-2 cursor-pointer">
                   <Upload size={20} /> Upload CSV
                   <input
                     type="file"

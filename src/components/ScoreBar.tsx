@@ -1,5 +1,5 @@
-import { Plus, Minus } from 'lucide-react';
-import type { Team } from '../types';
+import { Plus, Minus } from "lucide-react";
+import type { Team } from "../types";
 
 type ScoreBarProps = {
   teams: Team[];
@@ -29,29 +29,32 @@ const ScoreBar = ({
   };
 
   return (
-    <div className={`bg-blue-950 ${className ?? ''}`}>
-      <div className="grid gap-4 max-w-7xl mx-auto" style={{ gridTemplateColumns: `repeat(${numTeams}, minmax(0, 1fr))` }}>
+    <div className={`bg-blue-950 ${className ?? ""}`}>
+      <div
+        className="mx-auto grid max-w-7xl gap-4"
+        style={{ gridTemplateColumns: `repeat(${numTeams}, minmax(0, 1fr))` }}
+      >
         {teams.slice(0, numTeams).map((team, i) => (
           <div key={i} className="text-center">
-            <div className="bg-white px-4 py-2 rounded mb-2">
-              <p className="font-bold text-2xl">{team.name}</p>
+            <div className="mb-2 rounded bg-white px-4 py-2">
+              <p className="text-2xl font-bold">{team.name}</p>
               <input
                 type="number"
                 value={team.score}
                 onChange={(e) => updateTeamScoreDirect(i, e.target.value)}
-                className="text-2xl text-blue-900 font-bold w-full text-center border-2 border-blue-200 rounded px-2"
+                className="w-full rounded border-2 border-blue-200 px-2 text-center text-2xl font-bold text-blue-900"
               />
             </div>
-            <div className="flex gap-2 justify-center">
+            <div className="flex justify-center gap-2">
               <button
                 onClick={() => updateTeamScore(i, 1)}
-                className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500"
+                className="rounded bg-green-600 px-3 py-1 text-white hover:bg-green-500"
               >
                 <Plus size={20} />
               </button>
               <button
                 onClick={() => updateTeamScore(i, -1)}
-                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-500"
+                className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-500"
               >
                 <Minus size={20} />
               </button>

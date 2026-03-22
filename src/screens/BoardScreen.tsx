@@ -1,5 +1,5 @@
-import type { Category, GameStatus, Team } from '../types';
-import ScoreBar from '../components/ScoreBar';
+import type { Category, GameStatus, Team } from "../types";
+import ScoreBar from "../components/ScoreBar";
 
 type BoardScreenProps = {
   categories: Category[];
@@ -22,39 +22,54 @@ const BoardScreen = ({
 }: BoardScreenProps) => {
   const handleTileClick = (catIndex: number, qIndex: number) => {
     setSelectedTile({ catIndex, qIndex });
-    setGameState('question');
+    setGameState("question");
   };
 
   return (
     <div className="min-h-screen bg-blue-900 p-8">
-      <div className="max-w-none mx-auto">
-        <div className="flex justify-between items-center mb-8">
+      <div className="mx-auto max-w-none">
+        <div className="mb-8 flex items-center justify-between">
           <h1 className="text-5xl font-bold text-white">JEOPARDY!</h1>
           <button
-            onClick={() => setGameState('config')}
-            className="bg-yellow-500 text-blue-900 px-6 py-3 rounded font-bold hover:bg-yellow-400"
+            onClick={() => setGameState("config")}
+            className="rounded bg-yellow-500 px-6 py-3 font-bold text-blue-900 hover:bg-yellow-400"
           >
             Configure Game
           </button>
         </div>
 
-        <div className="grid gap-2 mb-8" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
+        <div
+          className="mb-8 grid gap-2"
+          style={{
+            gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))`,
+          }}
+        >
           {categories.map((cat, i) => (
             <div key={i} className="bg-blue-700 p-4 text-center">
-              <p className="text-white font-bold text-sm uppercase">{cat.name}</p>
+              <p className="text-sm font-bold text-white uppercase">
+                {cat.name}
+              </p>
             </div>
           ))}
         </div>
 
-        <div className="grid gap-2 mb-8" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
+        <div
+          className="mb-8 grid gap-2"
+          style={{
+            gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))`,
+          }}
+        >
           {categories.map((cat, catIndex) => (
             <div key={catIndex} className="flex flex-col gap-2">
               {cat.questions.map((question, qIndex) => (
                 <button
                   key={qIndex}
                   onClick={() => handleTileClick(catIndex, qIndex)}
-                  className={`${question.revealed ? 'bg-blue-950' : 'bg-blue-600 hover:bg-blue-500'
-                    } p-8 rounded text-yellow-400 text-3xl font-bold transition-colors`}
+                  className={`${
+                    question.revealed
+                      ? "bg-blue-950"
+                      : "bg-blue-600 hover:bg-blue-500"
+                  } rounded p-8 text-3xl font-bold text-yellow-400 transition-colors`}
                 >
                   {pointValues[qIndex]}
                 </button>
@@ -68,7 +83,7 @@ const BoardScreen = ({
           setTeams={setTeams}
           numTeams={numTeams}
           pointIncrement={pointValues[0]}
-          className="p-6 rounded-lg"
+          className="rounded-lg p-6"
         />
       </div>
     </div>

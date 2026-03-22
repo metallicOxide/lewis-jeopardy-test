@@ -1,7 +1,7 @@
 // csvImporter.ts
-import Papa from 'papaparse';
+import Papa from "papaparse";
 
-import { Question, Category } from '../types'
+import { Question, Category } from "../types";
 
 interface CSVRow {
   Category: string;
@@ -12,7 +12,7 @@ interface CSVRow {
 
 export const importQuestionsFromCSV = (
   file: File,
-  pointValues: number[]
+  pointValues: number[],
 ): Promise<Category[]> => {
   return new Promise((resolve, reject) => {
     Papa.parse<CSVRow>(file, {
@@ -24,17 +24,23 @@ export const importQuestionsFromCSV = (
         try {
           // Validate data
           if (!results.data || results.data.length === 0) {
-            reject(new Error('CSV file is empty'));
+            reject(new Error("CSV file is empty"));
             return;
           }
 
           // Check for required columns
-          const requiredColumns = ['Category', 'Number', 'Question', 'Answer'];
+          const requiredColumns = ["Category", "Number", "Question", "Answer"];
           const headers = results.meta.fields || [];
-          const missingColumns = requiredColumns.filter(col => !headers.includes(col));
+          const missingColumns = requiredColumns.filter(
+            (col) => !headers.includes(col),
+          );
 
           if (missingColumns.length > 0) {
-            reject(new Error(`Missing required columns: ${missingColumns.join(', ')}`));
+            reject(
+              new Error(
+                `Missing required columns: ${missingColumns.join(", ")}`,
+              ),
+            );
             return;
           }
 
@@ -43,23 +49,33 @@ export const importQuestionsFromCSV = (
 
           results.data.forEach((row, index) => {
             // Validate row data
-            if (!row.Category || row.Question === undefined || row.Answer === undefined) {
+            if (
+              !row.Category ||
+              row.Question === undefined ||
+              row.Answer === undefined
+            ) {
               console.warn(`Skipping row ${index + 1}: Missing required data`);
               return;
             }
 
             const categoryName = row.Category.trim();
-            const questionNumber = parseInt(row['Number']);
+            const questionNumber = parseInt(row["Number"]);
 
-            if (isNaN(questionNumber) || questionNumber < 0 || questionNumber >= pointValues.length) {
-              console.warn(`Skipping row ${index + 1}: Invalid Number ${row['Number']}`);
+            if (
+              isNaN(questionNumber) ||
+              questionNumber < 0 ||
+              questionNumber >= pointValues.length
+            ) {
+              console.warn(
+                `Skipping row ${index + 1}: Invalid Number ${row["Number"]}`,
+              );
               return;
             }
 
             const question: Question = {
               question: row.Question.trim(),
               answer: row.Answer.trim(),
-              revealed: false
+              revealed: false,
             };
 
             // Initialize category map if needed
@@ -77,33 +93,39 @@ export const importQuestionsFromCSV = (
               // Create questions array with all slots filled
               const questions: Question[] = pointValues.map((points, index) => {
                 const existingQuestion = questionsMap.get(index);
-                return existingQuestion || {
-                  question: `Question for ${categoryName} - ${points}`,
-                  answer: `Answer for ${categoryName} - ${points}`,
-                  revealed: false
-                };
+                return (
+                  existingQuestion || {
+                    question: `Question for ${categoryName} - ${points}`,
+                    answer: `Answer for ${categoryName} - ${points}`,
+                    revealed: false,
+                  }
+                );
               });
 
               return {
                 name: categoryName,
-                questions
+                questions,
               };
-            }
+            },
           );
 
           if (categories.length === 0) {
-            reject(new Error('No valid categories found in CSV'));
+            reject(new Error("No valid categories found in CSV"));
             return;
           }
 
           resolve(categories);
         } catch (error) {
-          reject(new Error(`Failed to parse CSV: ${error instanceof Error ? error.message : 'Unknown error'}`));
+          reject(
+            new Error(
+              `Failed to parse CSV: ${error instanceof Error ? error.message : "Unknown error"}`,
+            ),
+          );
         }
       },
       error: (error) => {
         reject(new Error(`Failed to read CSV file: ${error.message}`));
-      }
+      },
     });
   });
 };

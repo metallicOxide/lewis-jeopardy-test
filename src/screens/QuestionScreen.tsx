@@ -1,33 +1,18 @@
 import { useState, useEffect } from "react";
-import type { Category, GameStatus, Team } from "../types";
 import ScoreBar from "../components/ScoreBar";
+import { useGameStore } from "../controller";
 
-type QuestionScreenProps = {
-  categories: Category[];
-  setCategories: (categories: Category[]) => void;
-  teams: Team[];
-  setTeams: (teams: Team[]) => void;
-  numTeams: number;
-  pointValues: number[];
-  selectedTile: { catIndex: number; qIndex: number };
-  setSelectedTile: (tile: { catIndex: number; qIndex: number } | null) => void;
-  setGameState: (state: GameStatus) => void;
-};
+const QuestionScreen = () => {
+  const categories = useGameStore((s) => s.categories);
+  const setCategories = useGameStore((s) => s.setCategories);
+  const pointValues = useGameStore((s) => s.pointValues);
+  const selectedTile = useGameStore((s) => s.selectedTile);
+  const setSelectedTile = useGameStore((s) => s.setSelectedTile);
+  const setGameState = useGameStore((s) => s.setGameState);
 
-const QuestionScreen = ({
-  categories,
-  setCategories,
-  teams,
-  setTeams,
-  numTeams,
-  pointValues,
-  selectedTile,
-  setSelectedTile,
-  setGameState,
-}: QuestionScreenProps) => {
   const [showAnswer, setShowAnswer] = useState(false);
 
-  const { catIndex, qIndex } = selectedTile;
+  const { catIndex, qIndex } = selectedTile!;
   const category = categories[catIndex];
   const question = category.questions[qIndex];
 
@@ -92,9 +77,6 @@ const QuestionScreen = ({
       </div>
 
       <ScoreBar
-        teams={teams}
-        setTeams={setTeams}
-        numTeams={numTeams}
         pointIncrement={pointValues[qIndex]}
         className="p-4"
       />

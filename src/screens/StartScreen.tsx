@@ -1,25 +1,13 @@
-import type { GameStatus, Team } from "../types";
+import { useGameStore } from "../controller";
 
-type StartScreenProps = {
-  teams: Team[];
-  setTeams: (teams: Team[]) => void;
-  numTeams: number;
-  setNumTeams: (n: number) => void;
-  setGameState: (state: GameStatus) => void;
-};
+const StartScreen = () => {
+  const teams = useGameStore((s) => s.teams);
+  const setTeams = useGameStore((s) => s.setTeams);
+  const setGameState = useGameStore((s) => s.setGameState);
 
-const StartScreen = ({
-  teams,
-  setTeams,
-  numTeams,
-  setNumTeams,
-  setGameState,
-}: StartScreenProps) => {
   const handleNumTeamsChange = (num: number) => {
     const newNum = Math.max(1, Math.min(8, num));
-    setNumTeams(newNum);
-
-    const newTeams = Array(8)
+    const newTeams = Array(newNum)
       .fill(null)
       .map((_, i) => {
         if (i < teams.length) {
@@ -48,14 +36,11 @@ const StartScreen = ({
         </h1>
 
         <div className="mb-8">
-          <label className="block mb-4 text-xl font-bold text-white">
+          <label className="mb-4 block text-xl font-bold text-white">
             Number of Teams (1-8)
           </label>
           <input
-            type="number"
-            min="1"
-            max="8"
-            value={numTeams}
+            placeholder={teams.length.toString()}
             onChange={(e) => handleNumTeamsChange(parseInt(e.target.value))}
             className="w-full rounded border-2 border-blue-600 bg-blue-700 p-4 text-center text-2xl font-bold text-white"
           />
@@ -64,7 +49,7 @@ const StartScreen = ({
         <div className="mb-8">
           <h2 className="mb-4 text-xl font-bold text-white">Team Names</h2>
           <div className="grid grid-cols-2 gap-4">
-            {teams.slice(0, numTeams).map((team, i) => (
+            {teams.map((team, i) => (
               <input
                 key={i}
                 type="text"

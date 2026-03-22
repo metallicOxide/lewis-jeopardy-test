@@ -1,21 +1,15 @@
 import { Plus, Minus } from "lucide-react";
-import type { Team } from "../types";
+import { useGameStore } from "../controller";
 
 type ScoreBarProps = {
-  teams: Team[];
-  setTeams: (teams: Team[]) => void;
-  numTeams: number;
   pointIncrement: number;
   className?: string;
 };
 
-const ScoreBar = ({
-  teams,
-  setTeams,
-  numTeams,
-  pointIncrement,
-  className,
-}: ScoreBarProps) => {
+const ScoreBar = ({ pointIncrement, className }: ScoreBarProps) => {
+  const teams = useGameStore((s) => s.teams);
+  const setTeams = useGameStore((s) => s.setTeams);
+
   const updateTeamScore = (teamIndex: number, change: number) => {
     const newTeams = [...teams];
     newTeams[teamIndex].score += change * pointIncrement;
@@ -32,9 +26,9 @@ const ScoreBar = ({
     <div className={`bg-blue-950 ${className ?? ""}`}>
       <div
         className="mx-auto grid max-w-7xl gap-4"
-        style={{ gridTemplateColumns: `repeat(${numTeams}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${teams.length}, minmax(0, 1fr))` }}
       >
-        {teams.slice(0, numTeams).map((team, i) => (
+        {teams.map((team, i) => (
           <div key={i} className="text-center">
             <div className="mb-2 rounded bg-white px-4 py-2">
               <p className="text-2xl font-bold">{team.name}</p>

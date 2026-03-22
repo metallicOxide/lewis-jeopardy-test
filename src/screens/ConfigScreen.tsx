@@ -1,25 +1,16 @@
 import React from "react";
 import { Plus, Trash2, Upload } from "lucide-react";
-import { type Category, type GameStatus, type Team } from "../types";
+import type { Category } from "../types";
 import { importQuestionsFromCSV } from "../importer";
+import { useGameStore } from "../controller";
 
-type ConfigScreenProps = {
-  categories: Category[];
-  setCategories: (categories: Category[]) => void;
-  teams: Team[];
-  setTeams: (teams: Team[]) => void;
-  setGameState: (state: GameStatus) => void;
-  pointValues: number[];
-};
+const ConfigScreen = () => {
+  const categories = useGameStore((s) => s.categories);
+  const setCategories = useGameStore((s) => s.setCategories);
+  const setGameState = useGameStore((s) => s.setGameState);
+  const pointValues = useGameStore((s) => s.pointValues);
+  const resetGame = useGameStore((s) => s.resetGame);
 
-const ConfigScreen = ({
-  categories,
-  setCategories,
-  teams,
-  setTeams,
-  setGameState,
-  pointValues,
-}: ConfigScreenProps) => {
   const updateCategoryName = (index: number, name: string) => {
     const newCategories = [...categories];
     newCategories[index].name = name;
@@ -74,18 +65,6 @@ const ConfigScreen = ({
         `Error importing CSV: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
-  };
-
-  const resetGame = () => {
-    setGameState("start");
-    const newCategories = categories.map((cat) => ({
-      ...cat,
-      questions: cat.questions.map((q) => ({ ...q, revealed: false })),
-    }));
-    setCategories(newCategories);
-
-    const newTeams = teams.map((team) => ({ ...team, score: 0 }));
-    setTeams(newTeams);
   };
 
   return (

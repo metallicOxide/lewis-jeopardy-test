@@ -1,25 +1,12 @@
-import type { Category, GameStatus, Team } from "../types";
 import ScoreBar from "../components/ScoreBar";
+import { useGameStore } from "../controller";
 
-type BoardScreenProps = {
-  categories: Category[];
-  teams: Team[];
-  setTeams: (teams: Team[]) => void;
-  numTeams: number;
-  pointValues: number[];
-  setSelectedTile: (tile: { catIndex: number; qIndex: number }) => void;
-  setGameState: (state: GameStatus) => void;
-};
+const BoardScreen = () => {
+  const categories = useGameStore((s) => s.categories);
+  const pointValues = useGameStore((s) => s.pointValues);
+  const setSelectedTile = useGameStore((s) => s.setSelectedTile);
+  const setGameState = useGameStore((s) => s.setGameState);
 
-const BoardScreen = ({
-  categories,
-  teams,
-  setTeams,
-  numTeams,
-  pointValues,
-  setSelectedTile,
-  setGameState,
-}: BoardScreenProps) => {
   const handleTileClick = (catIndex: number, qIndex: number) => {
     setSelectedTile({ catIndex, qIndex });
     setGameState("question");
@@ -79,9 +66,6 @@ const BoardScreen = ({
         </div>
 
         <ScoreBar
-          teams={teams}
-          setTeams={setTeams}
-          numTeams={numTeams}
           pointIncrement={pointValues[0]}
           className="rounded-lg p-6"
         />

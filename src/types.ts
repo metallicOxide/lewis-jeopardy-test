@@ -1,3 +1,17 @@
+export type GameState = {
+    gameStatus?: GameStatus;
+    category?: Category[];
+    teams?: Team[];
+    questions?: Question[]
+}
+
+export const STATE_KEY = {
+    GAME_STATUS: 'gameStatus',
+    CATEGORY: 'category',
+    QUESTIONS: 'questions',
+    TEAMS: 'teams',
+} as const
+
 export type Question = {
     question: string;
     answer: string;

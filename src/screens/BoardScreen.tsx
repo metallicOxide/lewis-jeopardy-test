@@ -2,9 +2,9 @@ import ScoreBar from "../components/ScoreBar";
 import { useGameStore } from "../controller";
 
 const getCellStyles = (rowCount: number) => {
-  if (rowCount <= 5) return { padding: "p-8", fontSize: "text-3xl" };
-  if (rowCount <= 8) return { padding: "p-4", fontSize: "text-2xl" };
-  if (rowCount <= 12) return { padding: "p-2", fontSize: "text-xl" };
+  if (rowCount <= 3) return { padding: "p-8", fontSize: "text-3xl" };
+  if (rowCount <= 6) return { padding: "p-4", fontSize: "text-2xl" };
+  if (rowCount <= 10) return { padding: "p-2", fontSize: "text-xl" };
   return { padding: "p-1", fontSize: "text-lg" };
 };
 

@@ -89,6 +89,40 @@ export const useGameStore = create<JeopardyStore>()(
     }),
     {
       name: "JEOPARDY_GAME_STATE",
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        try {
+          const state = persisted as Record<string, unknown>;
+          if (version === 0 && Array.isArray(state.categories)) {
+            state.categories = (
+              state.categories as Array<{
+                name: string;
+                questions: Array<{
+                  question: string | { text: string };
+                  answer: string | { text: string };
+                  revealed: boolean;
+                }>;
+              }>
+            ).map((cat) => ({
+              ...cat,
+              questions: cat.questions.map((q) => ({
+                question:
+                  typeof q.question === "string"
+                    ? { text: q.question }
+                    : q.question,
+                answer:
+                  typeof q.answer === "string"
+                    ? { text: q.answer }
+                    : q.answer,
+                revealed: q.revealed,
+              })),
+            }));
+          }
+          return state as JeopardyStore;
+        } catch {
+          return undefined as unknown as JeopardyStore;
+        }
+      },
       partialize: (state) => ({
         gameState: state.gameState,
         categories: state.categories,

@@ -7,6 +7,10 @@ export interface CSVRow {
   Points: string;
   Question: string;
   Answer: string;
+  QuestionImageURL?: string;
+  QuestionYouTubeURL?: string;
+  AnswerImageURL?: string;
+  AnswerYouTubeURL?: string;
 }
 
 const REQUIRED_COLUMNS = ["Category", "Points", "Question", "Answer"];

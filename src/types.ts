@@ -1,6 +1,18 @@
+export type MediaType = "image" | "youtube";
+
+export type Media = {
+  type: MediaType;
+  url: string;
+};
+
+export type QuestionSide = {
+  text: string;
+  media?: Media;
+};
+
 export type Question = {
-  question: string;
-  answer: string;
+  question: QuestionSide;
+  answer: QuestionSide;
   revealed: boolean;
 };
 

@@ -20,10 +20,13 @@ const ImageLightbox = ({
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        e.stopImmediatePropagation();
+        onClose();
+      }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    return () => window.removeEventListener("keydown", handleKeyDown, { capture: true });
   }, [onClose]);
 
   return createPortal(
@@ -47,7 +50,12 @@ const ImageLightbox = ({
   );
 };
 
-const MediaDisplay = ({ media, enlargeable, lazy, className }: MediaDisplayProps) => {
+const MediaDisplay = ({
+  media,
+  enlargeable,
+  lazy,
+  className,
+}: MediaDisplayProps) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
 

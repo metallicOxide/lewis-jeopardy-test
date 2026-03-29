@@ -1,9 +1,10 @@
 import React from "react";
 import { Minus, Plus, Trash2, Upload } from "lucide-react";
-import type { Category } from "../types";
+import type { Category, QuestionSide } from "../types";
 import { importQuestionsFromCSV } from "../importer";
 import { useGameStore } from "../controller";
 import { createPlaceholderQuestion } from "../utils";
+import AssetInput from "../components/AssetInput";
 
 const ConfigScreen = () => {
   const categories = useGameStore((s) => s.categories);
@@ -60,7 +61,7 @@ const ConfigScreen = () => {
     catIndex: number,
     qIndex: number,
     field: "question" | "answer",
-    value: string,
+    value: QuestionSide,
   ) => {
     const newCategories = [...categories];
     newCategories[catIndex].questions[qIndex][field] = value;
@@ -200,29 +201,30 @@ const ConfigScreen = () => {
                   <p className="mb-2 font-bold text-white">
                     {pointValues[qIndex]} Points
                   </p>
-                  <input
-                    type="text"
-                    value={question.question}
-                    onChange={(e) =>
-                      updateQuestion(
-                        catIndex,
-                        qIndex,
-                        "question",
-                        e.target.value,
-                      )
-                    }
-                    className="mb-2 w-full rounded border border-blue-500 bg-blue-600 p-2 text-white"
-                    placeholder="Question"
-                  />
-                  <input
-                    type="text"
-                    value={question.answer}
-                    onChange={(e) =>
-                      updateQuestion(catIndex, qIndex, "answer", e.target.value)
-                    }
-                    className="w-full rounded border border-blue-500 bg-blue-600 p-2 text-white"
-                    placeholder="Answer"
-                  />
+                  <div className="mb-2">
+                    <label className="mb-1 block text-sm text-blue-300">
+                      Question
+                    </label>
+                    <AssetInput
+                      value={question.question}
+                      onChange={(val) =>
+                        updateQuestion(catIndex, qIndex, "question", val)
+                      }
+                      placeholder="Question"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-blue-300">
+                      Answer
+                    </label>
+                    <AssetInput
+                      value={question.answer}
+                      onChange={(val) =>
+                        updateQuestion(catIndex, qIndex, "answer", val)
+                      }
+                      placeholder="Answer"
+                    />
+                  </div>
                 </div>
               ))}
             </div>

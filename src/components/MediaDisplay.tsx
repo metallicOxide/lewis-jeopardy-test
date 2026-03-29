@@ -7,6 +7,7 @@ import { getYouTubeEmbedUrl } from "../utils";
 type MediaDisplayProps = {
   media: Media;
   enlargeable?: boolean;
+  lazy?: boolean;
   className?: string;
 };
 
@@ -46,7 +47,7 @@ const ImageLightbox = ({
   );
 };
 
-const MediaDisplay = ({ media, enlargeable, className }: MediaDisplayProps) => {
+const MediaDisplay = ({ media, enlargeable, lazy, className }: MediaDisplayProps) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -65,7 +66,7 @@ const MediaDisplay = ({ media, enlargeable, className }: MediaDisplayProps) => {
       <div className={className}>
         <img
           src={media.url}
-          loading="lazy"
+          loading={lazy ? "lazy" : "eager"}
           className={`max-h-[400px] max-w-[600px] rounded-lg object-contain ${enlargeable ? "cursor-pointer hover:opacity-80" : ""}`}
           onError={() => setImageError(true)}
           onClick={enlargeable ? () => setLightboxOpen(true) : undefined}
@@ -96,7 +97,7 @@ const MediaDisplay = ({ media, enlargeable, className }: MediaDisplayProps) => {
       <div className={`aspect-video max-w-[600px] ${className ?? ""}`}>
         <iframe
           src={embedUrl}
-          loading="lazy"
+          loading={lazy ? "lazy" : "eager"}
           allowFullScreen
           className="h-full w-full rounded-lg"
         />

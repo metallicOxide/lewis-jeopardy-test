@@ -109,6 +109,7 @@ const AssetInput = ({ value, onChange, placeholder }: AssetInputProps) => {
           {value.media.type === "image" && value.media.url && !imageError && (
             <img
               src={value.media.url}
+              loading="lazy"
               className="max-h-24 rounded object-contain"
               onError={() => setImageError(true)}
             />

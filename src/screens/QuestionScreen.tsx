@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ScoreBar from "../components/ScoreBar";
+import MediaDisplay from "../components/MediaDisplay";
 import { useGameStore } from "../controller";
 
 const QuestionScreen = () => {
@@ -67,19 +68,36 @@ const QuestionScreen = () => {
 
       <div className="flex flex-1 items-center justify-center p-8">
         <div className="text-center">
-          <p className="mb-8 text-6xl text-white">{question.question}</p>
+          {question.question.text && (
+            <p className="mb-8 text-6xl text-white">{question.question.text}</p>
+          )}
+          {question.question.media && (
+            <MediaDisplay
+              media={question.question.media}
+              enlargeable
+              className="mx-auto mb-6 flex justify-center"
+            />
+          )}
           {showAnswer && (
-            <p className="animate-fadeIn mt-8 text-5xl text-yellow-400">
-              {question.answer}
-            </p>
+            <div className="animate-fadeIn mt-8">
+              {question.answer.text && (
+                <p className="mb-8 text-5xl text-yellow-400">
+                  {question.answer.text}
+                </p>
+              )}
+              {question.answer.media && (
+                <MediaDisplay
+                  media={question.answer.media}
+                  enlargeable
+                  className="mx-auto mb-4 flex justify-center"
+                />
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      <ScoreBar
-        pointIncrement={pointValues[qIndex]}
-        className="p-4"
-      />
+      <ScoreBar pointIncrement={pointValues[qIndex]} className="p-4" />
     </div>
   );
 };

@@ -1,8 +1,17 @@
 import Papa from "papaparse";
 
-import { Question, Category } from "../types";
+import { Question, Category, Media } from "../types";
 import { createPlaceholderQuestion } from "../utils";
 import { CSVRow, validateCSV, isRowValid, derivePointValues } from "./util";
+
+const buildMedia = (
+  imageUrl?: string,
+  youtubeUrl?: string,
+): Media | undefined => {
+  if (imageUrl?.trim()) return { type: "image", url: imageUrl.trim() };
+  if (youtubeUrl?.trim()) return { type: "youtube", url: youtubeUrl.trim() };
+  return undefined;
+};
 
 const parseCSVData = (
   results: Papa.ParseResult<CSVRow>,
@@ -27,8 +36,14 @@ const parseCSVData = (
     categoryMap.get(categoryName)!.push({
       points,
       question: {
-        question: row.Question.trim(),
-        answer: row.Answer.trim(),
+        question: {
+          text: row.Question?.trim(),
+          media: buildMedia(row.QuestionImageURL, row.QuestionYouTubeURL),
+        },
+        answer: {
+          text: row.Answer?.trim(),
+          media: buildMedia(row.AnswerImageURL, row.AnswerYouTubeURL),
+        },
         revealed: false,
       },
     });

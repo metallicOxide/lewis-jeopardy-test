@@ -5,11 +5,15 @@ import { Question } from "../types";
 export interface CSVRow {
   Category: string;
   Points: string;
-  Question: string;
-  Answer: string;
+  Question?: string;
+  Answer?: string;
+  QuestionImageURL?: string;
+  QuestionYouTubeURL?: string;
+  AnswerImageURL?: string;
+  AnswerYouTubeURL?: string;
 }
 
-const REQUIRED_COLUMNS = ["Category", "Points", "Question", "Answer"];
+const REQUIRED_COLUMNS = ["Category", "Points"];
 
 export const validateCSV = (results: Papa.ParseResult<CSVRow>): void => {
   if (!results.data || results.data.length === 0) {

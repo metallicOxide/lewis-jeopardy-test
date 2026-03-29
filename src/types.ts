@@ -6,7 +6,7 @@ export type Media = {
 };
 
 export type QuestionSide = {
-  text: string;
+  text?: string;
   media?: Media;
 };
 

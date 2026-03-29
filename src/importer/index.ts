@@ -37,11 +37,11 @@ const parseCSVData = (
       points,
       question: {
         question: {
-          text: row.Question.trim(),
+          text: row.Question?.trim(),
           media: buildMedia(row.QuestionImageURL, row.QuestionYouTubeURL),
         },
         answer: {
-          text: row.Answer.trim(),
+          text: row.Answer?.trim(),
           media: buildMedia(row.AnswerImageURL, row.AnswerYouTubeURL),
         },
         revealed: false,

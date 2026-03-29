@@ -89,7 +89,7 @@ const QuestionScreen = () => {
                 <MediaDisplay
                   media={question.answer.media}
                   enlargeable
-                  className="mx-auto mb-4"
+                  className="mx-auto mb-4 flex justify-center"
                 />
               )}
             </div>

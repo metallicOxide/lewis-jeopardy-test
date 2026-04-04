@@ -173,6 +173,7 @@ export const useGameStore = create<JeopardyStore>()(
         teams: state.teams,
         pointValues: state.pointValues,
         role: state.role,
+        roomCode: state.roomCode,
       }),
     },
   ),

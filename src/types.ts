@@ -23,8 +23,16 @@ export type Category = {
 };
 
 export type Team = {
+  id: string;
   name: string;
   score: number;
 };
 
-export type GameStatus = "start" | "config" | "board" | "question";
+export type Role = "host" | "player" | null;
+
+export type BuzzEntry = {
+  playerId: string;
+  receivedAt: number;
+};
+
+export type GameStatus = "role-select" | "start" | "config" | "board" | "question";

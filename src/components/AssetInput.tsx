@@ -79,7 +79,7 @@ const AssetInput = ({ value, onChange, placeholder }: AssetInputProps) => {
       )}
 
       {!hasMedia && showMediaPicker && (
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => handleSelectMode("url")}
             className="flex items-center gap-1 rounded bg-blue-600 px-3 py-1 text-sm text-blue-200 hover:bg-blue-500 hover:text-white"
@@ -110,7 +110,7 @@ const AssetInput = ({ value, onChange, placeholder }: AssetInputProps) => {
       {hasMedia && value.media && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase text-blue-300">
+            <span className="text-xs text-blue-300 uppercase">
               {value.media.type === "youtube"
                 ? "YouTube URL"
                 : value.media.uploaded

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Category, GameStatus, Team } from "../types";
+import type { BuzzEntry, Category, GameStatus, Role, Team } from "../types";
 import { createPlaceholderQuestion } from "../utils";
 
 const POINT_VALUES = [100, 200, 300, 400, 500];
@@ -13,6 +13,17 @@ type JeopardyStore = {
   selectedTile: { catIndex: number; qIndex: number } | null;
   pointValues: number[];
 
+  // Multiplayer states (session-only, not persisted)
+  role: Role;
+  roomCode: string | null;
+  buzzOrder: BuzzEntry[];
+
+  playerInformation: {
+    id: string;
+    name: string;
+    roomCode: string;
+  } | null;
+
   // Actions
   setGameState: (state: GameStatus) => void;
   setCategories: (categories: Category[]) => void;
@@ -20,12 +31,23 @@ type JeopardyStore = {
   setSelectedTile: (tile: { catIndex: number; qIndex: number } | null) => void;
   setPointValues: (pointValues: number[]) => void;
   resetGame: () => void;
+
+  // Multiplayer actions
+  setRole: (role: Role) => void;
+  setRoomCode: (code: string | null) => void;
+  addTeam: (team: Team) => void;
+  addBuzz: (entry: BuzzEntry) => void;
+  clearBuzzOrder: () => void;
+  removeTeam: (id: string) => void;
+
+  // Player interaction
+  setPlayerInformtion: (name: string, gameCode: string) => void;
 };
 
 export const useGameStore = create<JeopardyStore>()(
   persist(
     (set) => ({
-      gameState: "start",
+      gameState: "role-select",
       categories: [
         {
           name: "Category 1",
@@ -34,14 +56,15 @@ export const useGameStore = create<JeopardyStore>()(
           ),
         },
       ],
-      teams: Array(2)
-        .fill(null)
-        .map((_, i) => ({
-          name: `Team ${i + 1}`,
-          score: 0,
-        })),
+      teams: [],
       selectedTile: null,
       pointValues: POINT_VALUES,
+
+      // Multiplayer state
+      role: null,
+      roomCode: null,
+      buzzOrder: [],
+      playerInformation: null,
 
       setGameState: (gameState) => set({ gameState }),
       setCategories: (categories) => set({ categories }),
@@ -77,14 +100,45 @@ export const useGameStore = create<JeopardyStore>()(
             }
           }),
         })),
+      // Multiplayer actions
+      setRole: (role) => set({ role }),
+      setRoomCode: (roomCode) => set({ roomCode }),
+      addTeam: (team) =>
+        set((state) => {
+          if (state.teams.some((t) => t.id === team.id)) return state;
+          return { teams: [...state.teams, team] };
+        }),
+      addBuzz: (entry) =>
+        set((state) => {
+          if (state.buzzOrder.some((b) => b.playerId === entry.playerId))
+            return state;
+          return { buzzOrder: [...state.buzzOrder, entry] };
+        }),
+      clearBuzzOrder: () => set({ buzzOrder: [] }),
+      removeTeam: (id) =>
+        set((state) => ({
+          teams: state.teams.filter((t) => t.id !== id),
+        })),
+      setPlayerInformtion: (name: string, roomCode: string) => {
+        set(() => ({
+          playerInformation: {
+            name,
+            roomCode,
+            id: crypto.randomUUID(),
+          },
+        }));
+      },
       resetGame: () =>
         set((state) => ({
-          gameState: "start",
+          gameState: "role-select",
           categories: state.categories.map((cat) => ({
             ...cat,
             questions: cat.questions.map((q) => ({ ...q, revealed: false })),
           })),
-          teams: state.teams.map((team) => ({ ...team, score: 0 })),
+          teams: [],
+          role: null,
+          roomCode: null,
+          buzzOrder: [],
         })),
     }),
     {
@@ -111,13 +165,21 @@ export const useGameStore = create<JeopardyStore>()(
                     ? { text: q.question }
                     : q.question,
                 answer:
-                  typeof q.answer === "string"
-                    ? { text: q.answer }
-                    : q.answer,
+                  typeof q.answer === "string" ? { text: q.answer } : q.answer,
                 revealed: q.revealed,
               })),
             }));
           }
+          // Ensure all teams have an id (migration from pre-multiplayer)
+          if (Array.isArray(state.teams)) {
+            state.teams = (
+              state.teams as Array<{ id?: string; name: string; score: number }>
+            ).map((t) => ({
+              ...t,
+              id: t.id ?? crypto.randomUUID(),
+            }));
+          }
+
           return state as JeopardyStore;
         } catch {
           return undefined as unknown as JeopardyStore;
@@ -128,6 +190,8 @@ export const useGameStore = create<JeopardyStore>()(
         categories: state.categories,
         teams: state.teams,
         pointValues: state.pointValues,
+        role: state.role,
+        roomCode: state.roomCode,
       }),
     },
   ),

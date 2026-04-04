@@ -1,5 +1,7 @@
 import ScoreBar from "../components/ScoreBar";
 import { useGameStore } from "../controller";
+import { useHostChannel } from "../multiplayer/useHostChannel";
+import { EVENTS } from "../multiplayer/types";
 
 const getCellStyles = (rowCount: number) => {
   if (rowCount <= 3) return { padding: "p-8", fontSize: "text-3xl" };
@@ -13,6 +15,11 @@ const BoardScreen = () => {
   const pointValues = useGameStore((s) => s.pointValues);
   const setSelectedTile = useGameStore((s) => s.setSelectedTile);
   const setGameState = useGameStore((s) => s.setGameState);
+  const roomCode = useGameStore((s) => s.roomCode);
+  const buzzOrder = useGameStore((s) => s.buzzOrder);
+  const removeTeam = useGameStore((s) => s.removeTeam);
+
+  const { broadcast } = useHostChannel();
 
   const cellStyles = getCellStyles(pointValues.length);
 
@@ -21,10 +28,25 @@ const BoardScreen = () => {
     setGameState("question");
   };
 
+  const handleRemoveTeam = (id: string) => {
+    removeTeam(id);
+    if (roomCode) {
+      const teams = useGameStore.getState().teams;
+      broadcast(EVENTS.PLAYER_REMOVED, { id, teams });
+    }
+  };
+
   return (
     <div className="flex h-screen flex-col bg-blue-900 p-8">
       <div className="flex items-center justify-between pb-4">
-        <h1 className="text-5xl font-bold text-white">JEOPARDY!</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-5xl font-bold text-white">JEOPARDY!</h1>
+          {roomCode && (
+            <span className="rounded bg-yellow-500 px-3 py-1 font-mono text-lg font-bold text-blue-900">
+              {roomCode}
+            </span>
+          )}
+        </div>
         <button
           onClick={() => setGameState("config")}
           className="rounded bg-yellow-500 px-6 py-3 font-bold text-blue-900 hover:bg-yellow-400"
@@ -71,7 +93,12 @@ const BoardScreen = () => {
         ))}
       </div>
 
-      <ScoreBar pointIncrement={pointValues[0]} className="rounded-lg p-6" />
+      <ScoreBar
+        pointIncrement={pointValues[0]}
+        className="rounded-lg p-6"
+        buzzOrder={buzzOrder}
+        onRemoveTeam={roomCode ? handleRemoveTeam : undefined}
+      />
     </div>
   );
 };

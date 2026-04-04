@@ -35,10 +35,12 @@ This changes `question`/`answer` from `string` to `QuestionSide`. All consumers 
 ### 1. `src/types.ts` — Add `MediaType`, `Media`, `QuestionSide`; update `Question`
 
 ### 2. `src/utils/index.ts` — Update `createPlaceholderQuestion`
+
 - Return `{ text: "..." }` objects instead of plain strings for question/answer
 - Add `getYouTubeEmbedUrl(url: string): string | null` helper to extract video ID and return embed URL. Handle `youtube.com/watch?v=`, `youtu.be/`, `youtube.com/embed/` formats.
 
 ### 3. `src/controller/store.ts` — Add store migration
+
 - Add `version: 1` and `migrate` function to the persist config
 - Migration converts old `string` question/answer to `{ text: string }` objects
 - Wrap in try/catch; fall back to clearing store on migration failure
@@ -48,6 +50,7 @@ This changes `question`/`answer` from `string` to `QuestionSide`. All consumers 
 Props: `{ value: QuestionSide; onChange: (value: QuestionSide) => void; placeholder?: string }`
 
 Behavior:
+
 - Always shows a text input for `value.text`
 - Shows an "Add Media" button when no media is set
 - Clicking it reveals a media type selector (Image URL / YouTube URL) and a URL input
@@ -62,6 +65,7 @@ Props: `{ media: Media; className?: string }`
 Behavior:
 
 **Image rendering (`type === "image"`)**:
+
 - Render inside a fixed-size container (e.g. `max-w-[600px] max-h-[400px]` for QuestionScreen, smaller for config preview)
 - Use `object-fit: contain` on the `<img>` so images larger than the container are scaled down while preserving aspect ratio
 - Images smaller than the container render at their natural size (no upscaling)
@@ -69,6 +73,7 @@ Behavior:
 - Add `onError` handler that shows a "Failed to load image" fallback message
 
 **YouTube rendering (`type === "youtube"`)**:
+
 - Extract video ID via `getYouTubeEmbedUrl` and render a responsive `<iframe>`
 - Add `loading="lazy"` on the `<iframe>` for deferred loading
 - Use `allowFullScreen` and a fixed aspect ratio container (16:9 via `aspect-video`)
@@ -76,6 +81,7 @@ Behavior:
 Both media types use `loading="lazy"` for efficient loading.
 
 **Image lightbox modal**:
+
 - Accept an optional `enlargeable?: boolean` prop (enabled on QuestionScreen, not on config preview)
 - When `enlargeable` is true and media is an image, show a `cursor-pointer` hover state on the image
 - Clicking the image opens a full-screen modal overlay (dark backdrop with `bg-black/80`)
@@ -84,18 +90,22 @@ Both media types use `loading="lazy"` for efficient loading.
 - Modal uses a React portal to render at the document root to avoid z-index/overflow issues
 
 ### 6. `src/screens/ConfigScreen.tsx` — Integrate `AssetInput`
+
 - Update `updateQuestion` to accept `QuestionSide` instead of `string`
 - Replace the two `<input>` elements per question with two `<AssetInput>` components
 
 ### 7. `src/screens/QuestionScreen.tsx` — Integrate `MediaDisplay`
+
 - Update rendering to use `question.question.text` / `question.answer.text`
 - Add `<MediaDisplay>` above text when media is present on either side
 
 ### 8. `src/importer/util.ts` — Add optional CSV columns
+
 - Add `QuestionImageURL?`, `QuestionYouTubeURL?`, `AnswerImageURL?`, `AnswerYouTubeURL?` to `CSVRow`
 - `REQUIRED_COLUMNS` stays unchanged (backward compatible)
 
 ### 9. `src/importer/index.ts` — Build media from CSV
+
 - Add `buildMedia(imageUrl?, youtubeUrl?): Media | undefined` helper (image takes precedence if both provided)
 - Update question construction to produce `QuestionSide` objects with optional media
 

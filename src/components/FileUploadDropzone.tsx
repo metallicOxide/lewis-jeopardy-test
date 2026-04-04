@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { uploadImage } from "../supabase/imageUpload";
-import { compressImage } from "../utils/FileUploadDropzone";
+import { compressImage } from "../utils/image-utils";
 
 type FileUploadDropzoneProps = {
   onUpload: (url: string) => void;

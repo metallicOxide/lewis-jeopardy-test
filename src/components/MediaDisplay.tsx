@@ -26,7 +26,8 @@ const ImageLightbox = ({
       }
     };
     window.addEventListener("keydown", handleKeyDown, { capture: true });
-    return () => window.removeEventListener("keydown", handleKeyDown, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", handleKeyDown, { capture: true });
   }, [onClose]);
 
   return createPortal(
@@ -58,6 +59,7 @@ const MediaDisplay = ({
 }: MediaDisplayProps) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   if (media.type === "image") {
     if (imageError) {
@@ -75,7 +77,8 @@ const MediaDisplay = ({
         <img
           src={media.url}
           loading={lazy ? "lazy" : "eager"}
-          className={`max-h-[400px] max-w-[600px] rounded-lg object-contain ${enlargeable ? "cursor-pointer hover:opacity-80" : ""}`}
+          className={`max-h-[400px] max-w-[600px] rounded-lg object-contain transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"} ${enlargeable ? "cursor-pointer hover:opacity-80" : ""}`}
+          onLoad={() => setLoaded(true)}
           onError={() => setImageError(true)}
           onClick={enlargeable ? () => setLightboxOpen(true) : undefined}
         />

@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Image, Youtube, Plus, X } from "lucide-react";
-import type { MediaType, QuestionSide } from "../types";
+import { Image, Youtube, Upload, Plus, X, Loader2 } from "lucide-react";
+import type { QuestionSide } from "../types";
+import { deleteImage } from "../supabase/imageUpload";
+import FileUploadDropzone from "./FileUploadDropzone";
 
 type AssetInputProps = {
   value: QuestionSide;
@@ -8,15 +10,13 @@ type AssetInputProps = {
   placeholder?: string;
 };
 
-const MEDIA_OPTIONS: { type: MediaType; label: string; icon: typeof Image }[] =
-  [
-    { type: "image", label: "Image URL", icon: Image },
-    { type: "youtube", label: "YouTube URL", icon: Youtube },
-  ];
+type MediaInputMode = "url" | "upload" | "youtube" | null;
 
 const AssetInput = ({ value, onChange, placeholder }: AssetInputProps) => {
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaInputMode, setMediaInputMode] = useState<MediaInputMode>(null);
   const [imageError, setImageError] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const hasMedia = !!value.media;
 
@@ -24,8 +24,13 @@ const AssetInput = ({ value, onChange, placeholder }: AssetInputProps) => {
     onChange({ ...value, text });
   };
 
-  const handleSelectMediaType = (type: MediaType) => {
-    onChange({ ...value, media: { type, url: "" } });
+  const handleSelectMode = (mode: MediaInputMode) => {
+    if (mode === "youtube") {
+      onChange({ ...value, media: { type: "youtube", url: "" } });
+    } else {
+      onChange({ ...value, media: { type: "image", url: "" } });
+    }
+    setMediaInputMode(mode);
     setShowMediaPicker(false);
     setImageError(false);
   };
@@ -37,10 +42,21 @@ const AssetInput = ({ value, onChange, placeholder }: AssetInputProps) => {
     }
   };
 
-  const handleRemoveMedia = () => {
+  const handleUploadSuccess = (url: string) => {
+    onChange({ ...value, media: { type: "image", url, uploaded: true } });
+    setImageError(false);
+  };
+
+  const handleRemoveMedia = async () => {
+    setIsRemoving(true);
+    if (value.media?.uploaded && value.media.url) {
+      await deleteImage(value.media.url);
+    }
     onChange({ ...value, media: undefined });
+    setMediaInputMode(null);
     setShowMediaPicker(false);
     setImageError(false);
+    setIsRemoving(false);
   };
 
   return (
@@ -63,16 +79,25 @@ const AssetInput = ({ value, onChange, placeholder }: AssetInputProps) => {
       )}
 
       {!hasMedia && showMediaPicker && (
-        <div className="flex gap-2">
-          {MEDIA_OPTIONS.map((opt) => (
-            <button
-              key={opt.type}
-              onClick={() => handleSelectMediaType(opt.type)}
-              className="flex items-center gap-1 rounded bg-blue-600 px-3 py-1 text-sm text-blue-200 hover:bg-blue-500 hover:text-white"
-            >
-              <opt.icon size={14} /> {opt.label}
-            </button>
-          ))}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => handleSelectMode("url")}
+            className="flex items-center gap-1 rounded bg-blue-600 px-3 py-1 text-sm text-blue-200 hover:bg-blue-500 hover:text-white"
+          >
+            <Image size={14} /> Image URL
+          </button>
+          <button
+            onClick={() => handleSelectMode("upload")}
+            className="flex items-center gap-1 rounded bg-blue-600 px-3 py-1 text-sm text-blue-200 hover:bg-blue-500 hover:text-white"
+          >
+            <Upload size={14} /> Upload Image
+          </button>
+          <button
+            onClick={() => handleSelectMode("youtube")}
+            className="flex items-center gap-1 rounded bg-blue-600 px-3 py-1 text-sm text-blue-200 hover:bg-blue-500 hover:text-white"
+          >
+            <Youtube size={14} /> YouTube URL
+          </button>
           <button
             onClick={() => setShowMediaPicker(false)}
             className="rounded bg-gray-600 px-2 py-1 text-sm text-gray-300 hover:bg-gray-500"
@@ -85,27 +110,47 @@ const AssetInput = ({ value, onChange, placeholder }: AssetInputProps) => {
       {hasMedia && value.media && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-blue-300 uppercase">
-              {value.media.type === "image" ? "Image URL" : "YouTube URL"}
+            <span className="text-xs uppercase text-blue-300">
+              {value.media.type === "youtube"
+                ? "YouTube URL"
+                : value.media.uploaded
+                  ? "Uploaded Image"
+                  : "Image URL"}
             </span>
             <button
               onClick={handleRemoveMedia}
-              className="rounded bg-gray-600 px-2 py-1 text-xs text-gray-300 hover:bg-gray-500"
+              disabled={isRemoving}
+              className="flex items-center gap-1 rounded bg-gray-600 px-2 py-1 text-xs text-gray-300 hover:bg-gray-500 disabled:opacity-50"
             >
-              <X size={12} />
+              {isRemoving ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <X size={12} />
+              )}
             </button>
           </div>
-          <input
-            type="text"
-            value={value.media.url}
-            onChange={(e) => handleMediaUrlChange(e.target.value)}
-            className="w-full rounded border border-blue-500 bg-blue-600 p-2 text-sm text-white"
-            placeholder={
-              value.media.type === "image"
-                ? "https://example.com/image.jpg"
-                : "https://youtube.com/watch?v=..."
-            }
-          />
+
+          {/* Upload dropzone — shown when in upload mode and no URL yet */}
+          {mediaInputMode === "upload" && !value.media.url && (
+            <FileUploadDropzone onUpload={handleUploadSuccess} />
+          )}
+
+          {/* URL input — shown for manual URL entry (image or youtube) */}
+          {mediaInputMode !== "upload" && (
+            <input
+              type="text"
+              value={value.media.url}
+              onChange={(e) => handleMediaUrlChange(e.target.value)}
+              className="w-full rounded border border-blue-500 bg-blue-600 p-2 text-sm text-white"
+              placeholder={
+                value.media.type === "image"
+                  ? "https://example.com/image.jpg"
+                  : "https://youtube.com/watch?v=..."
+              }
+            />
+          )}
+
+          {/* Image preview — shown once a URL exists (uploaded or manual) */}
           {value.media.type === "image" && value.media.url && !imageError && (
             <img
               src={value.media.url}

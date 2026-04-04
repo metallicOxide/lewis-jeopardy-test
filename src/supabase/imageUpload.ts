@@ -4,11 +4,12 @@ import { supabase } from "./client";
 const BUCKET = "jeopardy-images";
 const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-export async function uploadImage(file: File): Promise<string> {
-  const ext = file.name.split(".").pop();
-  const path = `${uuidv4()}.${ext}`;
+export async function uploadImage(file: Blob): Promise<string> {
+  const path = `${uuidv4()}.jpg`;
 
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file);
+  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+    contentType: "image/jpeg",
+  });
   if (error) throw error;
 
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);

@@ -3,6 +3,7 @@ export type MediaType = "image" | "youtube";
 export type Media = {
   type: MediaType;
   url: string;
+  uploaded?: boolean;
 };
 
 export type QuestionSide = {

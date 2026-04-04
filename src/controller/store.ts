@@ -29,6 +29,7 @@ type JeopardyStore = {
   // Multiplayer actions
   setRole: (role: Role) => void;
   setRoomCode: (code: string | null) => void;
+  addTeam: (team: Team) => void;
   addBuzz: (entry: BuzzEntry) => void;
   clearBuzzOrder: () => void;
   removeTeam: (id: string) => void;
@@ -98,6 +99,11 @@ export const useGameStore = create<JeopardyStore>()(
       // Multiplayer actions
       setRole: (role) => set({ role }),
       setRoomCode: (roomCode) => set({ roomCode }),
+      addTeam: (team) =>
+        set((state) => {
+          if (state.teams.some((t) => t.id === team.id)) return state;
+          return { teams: [...state.teams, team] };
+        }),
       addBuzz: (entry) =>
         set((state) => {
           if (state.buzzOrder.some((b) => b.playerId === entry.playerId))

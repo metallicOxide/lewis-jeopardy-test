@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useGameStore } from "../controller";
-import { EVENTS, type PlayerBuzzPayload } from "./types";
+import { EVENTS, PlayerJoinPayload, type PlayerBuzzPayload } from "./types";
 import { createChannel, destroyChannel } from "../supabase/channel";
 
 // 30 chars — excludes visually ambiguous I/1/O/0
@@ -40,6 +40,10 @@ export const connectHost = (roomCode: string) => {
   currentRoomCode = roomCode;
 
   channel
+    .on("broadcast", { event: EVENTS.PLAYER_JOIN }, ({ payload }) => {
+      const { id, name } = payload as PlayerJoinPayload;
+      useGameStore.getState().addTeam({ id, name, score: 0 });
+    })
     .on("broadcast", { event: EVENTS.PLAYER_BUZZ }, ({ payload }) => {
       const { id } = payload as PlayerBuzzPayload;
       const store = useGameStore.getState();

@@ -42,10 +42,7 @@ const ConfigScreen = () => {
     const newCategory: Category = {
       name: `Category ${categories.length + 1}`,
       questions: pointValues.map((points) =>
-        createPlaceholderQuestion(
-          `Category ${categories.length + 1}`,
-          points,
-        ),
+        createPlaceholderQuestion(`Category ${categories.length + 1}`, points),
       ),
     };
     setCategories([...categories, newCategory]);
@@ -104,7 +101,6 @@ const ConfigScreen = () => {
             </label>
             <button
               onClick={() => {
-                disconnectHost();
                 resetGame();
               }}
               className="rounded bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-500"

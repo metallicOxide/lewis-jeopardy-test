@@ -20,9 +20,6 @@ const StartScreen = () => {
     if (isHost && !roomCode) {
       const code = generateRoomCode();
       setRoomCode(code);
-      connectHost(code);
-    } else if (isHost && roomCode) {
-      connectHost(roomCode);
     }
   }, [isHost, roomCode, setRoomCode]);
 

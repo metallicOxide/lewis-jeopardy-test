@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { useGameStore } from "../controller";
 import { generateRoomCode } from "../multiplayer/useHostChannel";
-import { connectHost } from "../multiplayer/useHostChannel";
 
 const StartScreen = () => {
   const teams = useGameStore((s) => s.teams);

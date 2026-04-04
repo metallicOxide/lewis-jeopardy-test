@@ -35,4 +35,9 @@ export type BuzzEntry = {
   receivedAt: number;
 };
 
-export type GameStatus = "role-select" | "start" | "config" | "board" | "question";
+export type GameStatus =
+  | "role-select"
+  | "start"
+  | "config"
+  | "board"
+  | "question";

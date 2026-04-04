@@ -21,6 +21,7 @@ The game config screen allows users to attach media (image URL or YouTube) to qu
 ## Supabase Setup (one-time, manual)
 
 Since creating from scratch:
+
 1. Create a Supabase project at supabase.com
 2. Create a **public** Storage bucket named `jeopardy-images`
 3. Set bucket RLS policies to allow anonymous upload, read, and delete (or use service key)
@@ -31,23 +32,29 @@ Since creating from scratch:
 ## Files to Create
 
 ### `src/supabase/client.ts`
+
 Initialize Supabase client from env vars:
+
 ```ts
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+);
 ```
 
 ### `src/supabase/imageUpload.ts`
+
 Three exported functions:
+
 - `uploadImage(file: File): Promise<string>` — generates a UUID v4 filename, uploads to `jeopardy-images` bucket, returns the public URL
 - `deleteImage(url: string): Promise<void>` — extracts filename from the URL path, deletes from bucket
 - `cleanupExpiredImages(): Promise<void>` — lists all files in the bucket, deletes those where `created_at` is older than 30 days
 
 ### `src/components/FileUploadDropzone.tsx`
+
 Drag-and-drop file upload component (shadcnblocks dropzone-4 style):
+
 - Accepts `image/*` files only
 - Shows drag-over state with visual feedback
 - Shows upload progress/loading spinner while uploading
@@ -60,7 +67,9 @@ Drag-and-drop file upload component (shadcnblocks dropzone-4 style):
 ## Files to Modify
 
 ### `src/types.ts`
+
 Add `uploaded?: boolean` to `Media` to distinguish Supabase-hosted images from external URLs (needed to know when to call `deleteImage` on remove):
+
 ```ts
 export type Media = {
   type: MediaType;
@@ -70,6 +79,7 @@ export type Media = {
 ```
 
 ### `src/components/AssetInput.tsx`
+
 - Add local state `mediaInputMode: 'url' | 'upload' | null`
 - Extend the media picker to show three buttons: **Image URL**, **Upload Image**, **YouTube URL**
 - When `mediaInputMode === 'url'` and no URL yet: show URL text input (existing behavior)
@@ -79,12 +89,15 @@ export type Media = {
 - Image preview (for both URL and uploaded) remains unchanged — shows `<img>` when `type === 'image'` and url is set
 
 ### `src/App.tsx`
+
 Add a `useEffect` on mount to call `cleanupExpiredImages()` (fire-and-forget, no UI impact).
 
 ### `package.json` / `yarn.lock`
+
 Install `@supabase/supabase-js` and `uuid` (+ `@types/uuid` as dev dependency).
 
 ### `.env.local` (not committed)
+
 ```
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key

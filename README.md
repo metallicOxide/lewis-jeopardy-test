@@ -41,12 +41,12 @@ yarn dev
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `yarn dev` | Start dev server with HMR |
-| `yarn build` | Production build |
-| `yarn lint` | Lint with ESLint |
-| `yarn preview` | Preview production build |
+| Command        | Description               |
+| -------------- | ------------------------- |
+| `yarn dev`     | Start dev server with HMR |
+| `yarn build`   | Production build          |
+| `yarn lint`    | Lint with ESLint          |
+| `yarn preview` | Preview production build  |
 
 ## Game flow
 
@@ -63,16 +63,16 @@ Start screen → Config screen → Board screen → Question screen
 
 Questions can be bulk-imported from a CSV file on the Config screen. Required columns:
 
-| Column | Description |
-|--------|-------------|
-| `Category` | Category name |
-| `Points` | Point value (numeric) |
-| `Question` | Question text |
-| `Answer` | Answer text |
-| `QuestionImageURL` | _(optional)_ Image URL for the question |
+| Column               | Description                               |
+| -------------------- | ----------------------------------------- |
+| `Category`           | Category name                             |
+| `Points`             | Point value (numeric)                     |
+| `Question`           | Question text                             |
+| `Answer`             | Answer text                               |
+| `QuestionImageURL`   | _(optional)_ Image URL for the question   |
 | `QuestionYouTubeURL` | _(optional)_ YouTube URL for the question |
-| `AnswerImageURL` | _(optional)_ Image URL for the answer |
-| `AnswerYouTubeURL` | _(optional)_ YouTube URL for the answer |
+| `AnswerImageURL`     | _(optional)_ Image URL for the answer     |
+| `AnswerYouTubeURL`   | _(optional)_ YouTube URL for the answer   |
 
 ## Image uploads
 

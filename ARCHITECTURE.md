@@ -93,7 +93,9 @@ Media
 ## Component responsibilities
 
 ### `AssetInput`
+
 Edits a single `QuestionSide`. Manages three modes for media:
+
 - **No media** — shows "Add Media" button
 - **Image URL** — shows a text input; preview rendered inline
 - **Upload Image** — shows `FileUploadDropzone`; on success sets `media.uploaded = true`
@@ -102,13 +104,16 @@ Edits a single `QuestionSide`. Manages three modes for media:
 On remove, calls `deleteImage()` if `media.uploaded` is true.
 
 ### `FileUploadDropzone`
+
 Handles drag-and-drop and click-to-browse. On file selection:
+
 1. Validates `image/*` MIME type
 2. Calls `compressImage()` from `src/utils/FileUploadDropzone.ts`
 3. Calls `uploadImage()` from `src/supabase/imageUpload.ts`
 4. Fires `onUpload(url)` callback
 
 ### `MediaDisplay`
+
 Read-only media renderer used in `QuestionScreen`. Images open a lightbox on click. YouTube URLs are converted to embed URLs via `getYouTubeEmbedUrl()`.
 
 ## Supabase Storage
@@ -135,6 +140,7 @@ Cleanup (on app load)
 ### Compression (`src/utils/FileUploadDropzone.ts`)
 
 All uploads are compressed before leaving the browser:
+
 - Max dimension: **1280px** (longest edge, aspect ratio preserved)
 - Output format: **JPEG at 82% quality**
 - Implementation: native Canvas API (`drawImage` → `toBlob`) — no external library
@@ -142,6 +148,7 @@ All uploads are compressed before leaving the browser:
 ## CSV import
 
 `src/importer/index.ts` uses PapaParse to parse an uploaded `.csv` file. The importer:
+
 - Requires `Category` and `Points` columns; optional text and media columns per row
 - Groups rows by category, derives the canonical point values from the largest category
 - Fills missing questions with placeholder text so the grid stays rectangular

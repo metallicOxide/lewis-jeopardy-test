@@ -5,7 +5,6 @@ import { importQuestionsFromCSV } from "../importer";
 import { useGameStore } from "../controller";
 import { createPlaceholderQuestion } from "../utils";
 import AssetInput from "../components/AssetInput";
-import { disconnectHost } from "../multiplayer/useHostChannel";
 
 const ConfigScreen = () => {
   const categories = useGameStore((s) => s.categories);

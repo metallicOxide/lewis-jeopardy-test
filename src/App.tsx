@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useGameStore } from "./controller";
 import RoleSelectScreen from "./screens/RoleSelectScreen";
 import StartScreen from "./screens/StartScreen";

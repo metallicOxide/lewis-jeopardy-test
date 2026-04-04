@@ -18,6 +18,12 @@ type JeopardyStore = {
   roomCode: string | null;
   buzzOrder: BuzzEntry[];
 
+  playerInformation: {
+    id: string;
+    name: string;
+    roomCode: string;
+  } | null;
+
   // Actions
   setGameState: (state: GameStatus) => void;
   setCategories: (categories: Category[]) => void;
@@ -33,6 +39,9 @@ type JeopardyStore = {
   addBuzz: (entry: BuzzEntry) => void;
   clearBuzzOrder: () => void;
   removeTeam: (id: string) => void;
+
+  // Player interaction
+  setPlayerInformtion: (name: string, gameCode: string) => void;
 };
 
 export const useGameStore = create<JeopardyStore>()(
@@ -47,13 +56,7 @@ export const useGameStore = create<JeopardyStore>()(
           ),
         },
       ],
-      teams: Array(2)
-        .fill(null)
-        .map((_, i) => ({
-          id: crypto.randomUUID(),
-          name: `Team ${i + 1}`,
-          score: 0,
-        })),
+      teams: [],
       selectedTile: null,
       pointValues: POINT_VALUES,
 
@@ -61,6 +64,7 @@ export const useGameStore = create<JeopardyStore>()(
       role: null,
       roomCode: null,
       buzzOrder: [],
+      playerInformation: null,
 
       setGameState: (gameState) => set({ gameState }),
       setCategories: (categories) => set({ categories }),
@@ -115,7 +119,15 @@ export const useGameStore = create<JeopardyStore>()(
         set((state) => ({
           teams: state.teams.filter((t) => t.id !== id),
         })),
-
+      setPlayerInformtion: (name: string, roomCode: string) => {
+        set(() => ({
+          playerInformation: {
+            name,
+            roomCode,
+            id: crypto.randomUUID(),
+          },
+        }));
+      },
       resetGame: () =>
         set((state) => ({
           gameState: "role-select",
@@ -123,7 +135,7 @@ export const useGameStore = create<JeopardyStore>()(
             ...cat,
             questions: cat.questions.map((q) => ({ ...q, revealed: false })),
           })),
-          teams: state.teams.map((team) => ({ ...team, score: 0 })),
+          teams: [],
           role: null,
           roomCode: null,
           buzzOrder: [],

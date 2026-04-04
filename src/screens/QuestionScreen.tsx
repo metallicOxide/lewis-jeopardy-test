@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import ScoreBar from "../components/ScoreBar";
 import MediaDisplay from "../components/MediaDisplay";
 import { useGameStore } from "../controller";
+import { useHostChannel } from "../multiplayer/useHostChannel";
+import { EVENTS } from "../multiplayer/types";
 
 const QuestionScreen = () => {
   const categories = useGameStore((s) => s.categories);
@@ -10,6 +12,12 @@ const QuestionScreen = () => {
   const selectedTile = useGameStore((s) => s.selectedTile);
   const setSelectedTile = useGameStore((s) => s.setSelectedTile);
   const setGameState = useGameStore((s) => s.setGameState);
+  const roomCode = useGameStore((s) => s.roomCode);
+  const clearBuzzOrder = useGameStore((s) => s.clearBuzzOrder);
+  const buzzOrder = useGameStore((s) => s.buzzOrder);
+  const removeTeam = useGameStore((s) => s.removeTeam);
+
+  const { broadcast, resetBuzzer, disableBuzzer } = useHostChannel();
 
   const [showAnswer, setShowAnswer] = useState(false);
 
@@ -17,7 +25,20 @@ const QuestionScreen = () => {
   const category = categories[catIndex];
   const question = category.questions[qIndex];
 
+  // Ensure buzzer is enabled on mount and reset buzz order
+  // Also reset the buzzer
+  useEffect(() => {
+    clearBuzzOrder();
+    if (roomCode) {
+      resetBuzzer();
+    }
+  }, [roomCode, resetBuzzer]);
+
   const handleBack = () => {
+    clearBuzzOrder();
+    if (roomCode) {
+      disableBuzzer();
+    }
     setSelectedTile(null);
     setShowAnswer(false);
     setGameState("board");
@@ -43,6 +64,14 @@ const QuestionScreen = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedTile]);
+
+  const handleRemoveTeam = (id: string) => {
+    removeTeam(id);
+    if (roomCode) {
+      const teams = useGameStore.getState().teams;
+      broadcast(EVENTS.PLAYER_REMOVED, { id, teams });
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-blue-900">
@@ -97,7 +126,12 @@ const QuestionScreen = () => {
         </div>
       </div>
 
-      <ScoreBar pointIncrement={pointValues[qIndex]} className="p-4" />
+      <ScoreBar
+        pointIncrement={pointValues[qIndex]}
+        className="p-4"
+        buzzOrder={buzzOrder}
+        onRemoveTeam={roomCode ? handleRemoveTeam : undefined}
+      />
     </div>
   );
 };

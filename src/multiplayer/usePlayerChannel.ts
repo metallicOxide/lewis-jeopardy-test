@@ -21,7 +21,7 @@ export const usePlayerChannel = ({
 }: UsePlayerChannelOptions) => {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const [connected, setConnected] = useState(false);
-  const [buzzerEnabled, setBuzzerEnabled] = useState(true);
+  const [isBuzzerEnabled, setIsBuzzerEnabled] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
   const [buzzOrder, setBuzzOrder] = useState<BuzzEntry[]>([]);
 
@@ -47,7 +47,11 @@ export const usePlayerChannel = ({
         setBuzzOrder(data.buzzOrder);
       })
       .on("broadcast", { event: EVENTS.BUZZ_RESET }, () => {
-        setBuzzerEnabled(true);
+        setIsBuzzerEnabled(true);
+        setBuzzOrder([]);
+      })
+      .on("broadcast", { event: EVENTS.BUZZ_DISABLE }, () => {
+        setIsBuzzerEnabled(false);
       })
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
@@ -67,5 +71,5 @@ export const usePlayerChannel = ({
     };
   }, [roomCode, playerId, playerName]);
 
-  return { connected, buzzerEnabled, teams, buzzOrder, sendBuzz };
+  return { connected, isBuzzerEnabled, teams, buzzOrder, sendBuzz };
 };

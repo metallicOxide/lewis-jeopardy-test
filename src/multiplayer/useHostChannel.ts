@@ -87,8 +87,17 @@ export const useHostChannel = () => {
     hostChannel?.send({
       type: "broadcast",
       event: EVENTS.BUZZ_RESET,
+      payload: {},
     });
   }, []);
 
-  return { broadcast, resetBuzzer };
+  const disableBuzzer = useCallback(() => {
+    hostChannel?.send({
+      type: "broadcast",
+      event: EVENTS.BUZZ_DISABLE,
+      payload: {},
+    });
+  }, []);
+
+  return { broadcast, resetBuzzer, disableBuzzer };
 };

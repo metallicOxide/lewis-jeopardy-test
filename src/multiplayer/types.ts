@@ -7,6 +7,7 @@ export const EVENTS = {
   PLAYER_REMOVED: "player-removed",
   BUZZ_ORDER_UPDATE: "buzz-order-update",
   BUZZ_RESET: "buzz_reset",
+  BUZZ_DISABLE: "buzz_disable",
 } as const;
 
 // Broadcast payload types

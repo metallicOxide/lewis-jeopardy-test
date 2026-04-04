@@ -5,6 +5,7 @@ import { importQuestionsFromCSV } from "../importer";
 import { useGameStore } from "../controller";
 import { createPlaceholderQuestion } from "../utils";
 import AssetInput from "../components/AssetInput";
+import { disconnectHost } from "../multiplayer/useHostChannel";
 
 const ConfigScreen = () => {
   const categories = useGameStore((s) => s.categories);
@@ -102,7 +103,10 @@ const ConfigScreen = () => {
               />
             </label>
             <button
-              onClick={resetGame}
+              onClick={() => {
+                disconnectHost();
+                resetGame();
+              }}
               className="rounded bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-500"
             >
               Reset game
